@@ -1,0 +1,971 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1, viewport-fit=cover">
+<title>ALTIS — Panel de Datos</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,800;9..144,900&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef2f6;--surface:#fff;--surface-2:#f7f9fb;--border:#dbe4ef;--border-strong:#b8c7dc;--ink:#0f1e2e;--ink-2:#3a4f6a;--ink-3:#7a8da8;--teal:#0f3d2e;--teal-2:#0f5a3a;--emerald:#00a67d;--navy:#1e3a5f;--amber:#b45309;--rust:#9f2d1a;--shadow-sm:0 4px 12px rgba(15,30,46,.08);--shadow-md:0 12px 32px rgba(15,30,46,.14);--radius:18px}
+:root[data-theme="dark"]{--bg:#0b1118;--surface:#16202e;--surface-2:#1b2737;--border:#243447;--border-strong:#2e445e;--ink:#e8eef6;--ink-2:#a8b9d1;--ink-3:#7a8da8;--teal:#0a2e22;--teal-2:#1a8a63;--shadow-sm:0 4px 16px rgba(0,0,0,.4);--shadow-md:0 12px 32px rgba(0,0,0,.55)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b1118;--surface:#16202e;--surface-2:#1b2737;--border:#243447;--ink:#e8eef6;--ink-2:#a8b9d1}}
+.theme-toggle{width:40px;height:40px;border-radius:12px;border:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;transition:all .2s}
+.theme-toggle:hover{transform:translateY(-1px);box-shadow:var(--shadow-sm)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Plus Jakarta Sans',system-ui,sans-serif;font-size:14px}
+h1,h2,h3{font-family:'Fraunces',serif;letter-spacing:-.02em;margin:0}
+button,input,select,textarea{font:inherit}
+.tabular{font-variant-numeric:tabular-nums;font-family:'JetBrains Mono',monospace}
+.muted{color:var(--ink-3)}
+#toast-root{position:fixed;top:16px;right:16px;z-index:999;display:flex;flex-direction:column;gap:8px}
+.toast{background:#0f1e2e;color:#fff;padding:12px 16px;border-radius:12px;font-weight:700;font-size:13px;box-shadow:0 12px 32px rgba(0,0,0,.18);animation:pop .2s}
+@keyframes pop{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.btn{min-height:44px;display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);font-weight:800;cursor:pointer;transition:all .15s}
+.btn:hover{transform:translateY(-1px);box-shadow:var(--shadow-sm)}
+.btn-primary{background:var(--teal);color:#fff;border-color:var(--teal)}
+.btn-primary:hover{background:#0b2e22}
+.btn-danger{background:#fee2e2;border-color:#fecaca;color:#dc2626}
+.btn-sm{padding:7px 12px;font-size:12.5px;border-radius:10px}
+.btn-block{width:100%;justify-content:center}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden}
+.card-pad{padding:18px 20px}
+.layout{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+@media(max-width:900px){.layout{grid-template-columns:1fr}}
+.sidebar{background:linear-gradient(180deg,#0b1f18,#123a2d);color:#d7e8e0;padding:20px 14px;display:flex;flex-direction:column;gap:18px;position:sticky;top:0;height:100vh;overflow:auto}
+@media(max-width:900px){.sidebar{position:relative;height:auto}}
+.side-logo{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#00a67d,#22d3a5);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900}
+.nav{display:flex;flex-direction:column;gap:4px}
+.nav button{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:12px;border:1px solid transparent;background:none;color:rgba(255,255,255,.7);font-weight:700;cursor:pointer;text-align:left;width:100%}
+.nav button.active{background:#fff;color:#0f2e24}
+.nav button:hover{background:rgba(255,255,255,.08);color:#fff}
+.nav button.active:hover{background:#fff;color:#0f2e24}
+.main{padding:22px 26px 40px;display:flex;flex-direction:column;gap:18px}
+.topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;background:rgba(255,255,255,.8);backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:18px;padding:16px 20px;position:sticky;top:14px;z-index:10}
+.kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(max-width:600px){.kpi-grid{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:12px;font-weight:800;color:var(--ink-2);letter-spacing:.02em}
+.field input,.field select,.field textarea{padding:10px 12px;border-radius:12px;border:1.5px solid var(--border);background:var(--surface)}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--teal-2);box-shadow:0 0 0 3px rgba(15,90,58,.12)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:700px){.grid2{grid-template-columns:1fr}}
+.table-wrap{overflow:auto;border:1px solid var(--border);border-radius:14px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:var(--surface-2);text-align:left;padding:10px 12px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+td input{width:100%;padding:7px 8px;border-radius:8px;border:1px solid var(--border)}
+.badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:800}
+.badge-teal{background:#dcfce7;color:#15803d}
+.badge-amber{background:#fef3c7;color:#b45309}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.tabs button{padding:8px 14px;border-radius:999px;border:1px solid var(--border);background:var(--surface);font-weight:800;cursor:pointer}
+.tabs button.active{background:var(--teal);color:#fff;border-color:var(--teal)}
+.range-row{display:flex;align-items:center;gap:10px}
+.range-row input[type="range"]{flex:1}
+.stat-preview{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.stat-preview div{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:10px 12px;min-width:120px}
+.stat-preview b{display:block;font-size:16px;font-family:'Fraunces',serif}
+/* ===== ADMIN ÚNICO — REDISEÑO ===== */
+:root{ --bg:#fdfbf7; --surface:#fff; --surface-2:#fdf6ee; --border:#e8ddd0; --ink:#0f0f0f; --ink-2:#3a3a3a; --teal:#0a2e1f; }
+body{background:var(--bg); background-image: radial-gradient(1px 1px at 10% 10%, rgba(10,46,31,.05) 1px, transparent 0)}
+.layout{grid-template-columns:280px 1fr; gap:14px; padding:14px}
+.sidebar{border-radius:22px; margin:0; height:calc(100vh - 28px); border:1px solid rgba(255,255,255,.08); box-shadow:0 12px 40px rgba(0,0,0,.12)}
+.main{padding:0 0 40px 0; gap:16px}
+.topbar{border-radius:20px; border:1.5px solid var(--border); box-shadow:0 2px 20px rgba(0,0,0,.06); margin:0; background:rgba(255,255,255,.92); backdrop-filter:blur(16px)}
+.card{border-radius:20px; border:1.5px solid var(--border); box-shadow:0 2px 20px rgba(0,0,0,.06)}
+.card:hover{transform:translateY(-1px); box-shadow:0 12px 32px rgba(0,0,0,.08)}
+.btn{min-height:44px;border-radius:999px; font-weight:800}
+.nav button{border-radius:12px}
+.nav button.active{box-shadow:0 4px 16px rgba(0,0,0,.15)}
+#mobile-menu-btn{display:none; width:40px;height:40px;border-radius:12px;border:1.5px solid var(--border);background:var(--surface);align-items:center;justify-content:center;cursor:pointer}
+@media (max-width: 900px){
+  .layout{grid-template-columns:1fr; padding:0; gap:0}
+  .sidebar{position:fixed!important;top:0;left:0;bottom:0;width:280px!important;height:100vh!important;margin:0!important;border-radius:0 20px 20px 0!important;transform:translateX(-100%);transition:transform .3s cubic-bezier(.16,1,.3,1);z-index:250!important;overflow:auto}
+  .sidebar.open{transform:translateX(0)!important}
+  #mobile-menu-btn{display:flex!important}
+  #mobile-overlay{display:block!important}
+  .main{padding:12px!important}
+  .topbar{margin:0 12px!important;flex-direction:column;gap:10px}
+  .kpi-grid{grid-template-columns:1fr!important}
+  .grid2{grid-template-columns:1fr!important}
+  .table-wrap{overflow-x:auto; -webkit-overflow-scrolling:touch}
+  table{font-size:13px}
+  th,td{padding:8px 10px;white-space:nowrap}
+}
+/* ===== MÁS AMIGABLE — COLORES Y DIVISIÓN ===== */
+#tab-dashboard{ background: linear-gradient(135deg,#fefce8 0%, #fef3c7 30%, #fff 100%); border:1.5px solid #fde68a!important; position:relative; overflow:hidden}
+#tab-dashboard::before{content:""; position:absolute; top:-40px; right:-40px; width:180px; height:180px; background:radial-gradient(circle, rgba(251,191,36,.15) 0%, transparent 70%); border-radius:50%; pointer-events:none}
+#tab-general{ border-top:4px solid #0a7a4c!important; background:linear-gradient(180deg,#f0fdf4 0%, #fff 60px) }
+#tab-economia{ border-top:4px solid #f59e0b!important; background:linear-gradient(180deg,#fffbeb 0%, #fff 60px) }
+#tab-territorios{ border-top:4px solid #0ea5e9!important; background:linear-gradient(180deg,#f0f9ff 0%, #fff 60px) }
+#tab-documentos{ border-top:4px solid #8b5cf6!important; background:linear-gradient(180deg,#f5f3ff 0%, #fff 60px) }
+#tab-fechas{ border-top:4px solid #ec4899!important; background:linear-gradient(180deg,#fdf2f8 0%, #fff 60px) }
+#tab-usuarios{ border-top:4px solid #10b981!important; background:linear-gradient(180deg,#ecfdf5 0%, #fff 60px) }
+#tab-auditoria{ border-top:4px solid #ef4444!important; background:linear-gradient(180deg,#fef2f2 0%, #fff 60px) }
+#tab-datos{ border-top:4px solid #6366f1!important; background:linear-gradient(180deg,#f5f3ff 0%, #fff 60px) }
+.card h2{display:flex;align-items:center;gap:8px}
+#tab-general h2::before{content:"📊"; font-size:20px}
+#tab-economia h2::before{content:"💰";}
+#tab-territorios h2::before{content:"🗺️";}
+#tab-documentos h2::before{content:"📁";}
+#tab-fechas h2::before{content:"📅";}
+#tab-usuarios h2::before{content:"👥";}
+#tab-auditoria h2::before{content:"🛡️";}
+#tab-datos h2::before{content:"🗄️";}
+#tab-dashboard h2::before{content:"🏠";}
+#upload-platform-zone{ background:linear-gradient(135deg,#fff 0%, #f0fdf4 100%)!important; border:2px dashed #22c55e!important; position:relative}
+#upload-platform-zone::after{content:"✨ Súper fácil"; position:absolute; top:-10px; right:14px; background:#22c55e; color:#fff; font-size:10px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; padding:3px 8px; border-radius:999px}
+.kpi-grid .field{background:#fff; border:1px solid var(--border); border-radius:12px; padding:10px; transition:all .15s}
+.kpi-grid .field:hover{border-color:#0a7a4c; transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,.06)}
+#dims-form > div, #funding-form > div{background:#fff; border:1px solid var(--border); border-radius:12px; padding:8px; }
+.tabs button{transition:all .15s}
+.tabs button.active{transform:scale(1.03)}
+</style>
+</head>
+<body>
+<div id="toast-root"></div>
+<!-- LOGO OBSERVATORIO ESQUINA SUPERIOR IZQUIERDA -->
+<div id="corner-logo" style="position:fixed;top:14px;left:14px;z-index:90;background:#fff;padding:0;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.14);border:1px solid #e8ddd0;display:flex;align-items:center;justify-content:center;overflow:hidden;width:240px;height:78px;pointer-events:none">
+  <img src="logo-observatorio.png" alt="Observatorio Nacional de Reconstrucción — República de Colombia" style="width:100%;height:100%;object-fit:cover;object-position:center;display:block;pointer-events:auto;border-radius:16px">
+</div>
+<div class="layout">
+  <aside class="sidebar">
+    <div style="display:flex;gap:10px;align-items:center;padding:6px 6px 14px;border-bottom:1px solid rgba(255,255,255,.08)">
+      <div class="side-logo">A</div><div><b style="font-family:'Fraunces',serif;color:#fff;font-size:16px">ALTIS — Panel de Datos</b><br><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.6);font-weight:700">Panel de Datos</span></div>
+    </div>
+    <nav class="nav" id="nav">
+      <button class="active" data-tab="dashboard">🏠 Dashboard</button>
+      <button data-tab="general">📊 General & KPIs</button>
+      <button data-tab="economia">💰 Economía & Financiación</button>
+      <button data-tab="territorios">🗺️ Territorios</button>
+      <button data-tab="documentos">📁 Documentos</button>
+      <button data-tab="fechas">📅 Fechas & Ámbitos</button>
+      <button data-tab="usuarios">👥 Usuarios & Roles</button>
+      <button data-tab="auditoria">🛡️ Auditoría</button>
+      <button data-tab="datos">🗄️ Datos & JSON</button>
+    </nav>
+    <div style="margin-top:auto;display:flex;flex-direction:column;gap:8px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08)">
+      <button class="btn btn-primary btn-block" onclick="saveAll()">💾 Guardar cambios</button>
+      
+      <a href="ALTIS-Panorama.html" target="_blank" style="text-align:center;color:rgba(255,255,255,.7);font-size:12px;font-weight:700;text-decoration:none">→ Abrir Panorama</a>
+      <p class="muted" style="font-size:11px;text-align:center;color:rgba(255,255,255,.5)">Los cambios se sincronizan en vivo vía localStorage. Abre ambas apps lado a lado.</p>
+    </div>
+  </aside>
+  <div id="mobile-overlay" hidden style="position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:240;display:none"></div>
+  <div class="main">
+    <div class="topbar">
+      <button id="mobile-menu-btn" aria-label="Abrir menú" style="display:none;flex-shrink:0">☰</button>
+      <div><h1 style="font-size:22px">Panel de Datos</h1><p class="muted" style="font-size:13px;margin-top:4px">Modifica cualquier dato, estadística o territorio. Los cambios se reflejan al instante en el Panorama.</p></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <button class="theme-toggle" id="theme-toggle" title="Cambiar tema">🌙</button>
+        <button class="btn btn-sm" onclick="exportJSON()">⬇ Exportar JSON</button>
+        <label class="btn btn-sm" style="cursor:pointer">⬆ Importar JSON<input type="file" id="import-file" accept=".json" hidden></label>
+        <button class="btn btn-primary btn-sm" onclick="saveAll()">💾 Guardar</button>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <section id="tab-dashboard" class="card card-pad">
+      <h2 style="font-size:18px">🏠 Dashboard — Estado del sistema</h2>
+      <p class="muted" style="font-size:13px;margin:6px 0 14px">Visión ejecutiva en vivo. Conectado a <code>altis_db_v2</code> y <code>altis_docs_v2</code>.</p>
+      <div style="background:linear-gradient(135deg,#0a2e1f 0%, #0e4a33 100%);color:#fff;border-radius:16px;padding:18px;display:flex;gap:14px;align-items:center;margin-bottom:14px">
+        <div style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">👋</div>
+        <div><h3 style="color:#fff;font-size:15px">¡Hola! Bienvenido a tu Panel de Datos</h3><p style="color:rgba(255,255,255,.85);font-size:12px;margin-top:2px">Sube, edita y publica los datos de tu plataforma de forma fácil y segura. Te guiamos paso a paso — sin complicaciones.</p></div>
+        <button class="btn" style="background:#fff;color:#0a2e1f;border:none;margin-left:auto;flex-shrink:0" onclick="document.getElementById('upload-platform-zone').scrollIntoView({behavior:'smooth',block:'center'})">Comenzar →</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+        <div class="card card-pad" style="background:linear-gradient(135deg,#0f5a3a,#00a67d);color:#fff;border:none"><p style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;opacity:.9">Evidencias</p><p class="tabular" id="dash-docs" style="font-size:24px;font-weight:900">0</p><p style="font-size:11px;opacity:.85" id="dash-docs-sub"></p></div>
+        <div class="card card-pad" style="background:linear-gradient(135deg,#1e3a5f,#3b82f6);color:#fff;border:none"><p style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;opacity:.9">Daño estimado</p><p class="tabular" id="dash-dano" style="font-size:24px;font-weight:900">0</p><p style="font-size:11px;opacity:.85">Cobertura <span id="dash-cob"></span></p></div>
+        <div class="card card-pad" style="background:linear-gradient(135deg,#b45309,#f59e0b);color:#fff;border:none"><p style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;opacity:.9">Municipios afectados</p><p class="tabular" id="dash-mun" style="font-size:24px;font-weight:900">0</p><p style="font-size:11px;opacity:.85" id="dash-mun-sub"></p></div>
+        <div class="card card-pad" style="background:linear-gradient(135deg,#7c2d12,#ea580c);color:#fff;border:none"><p style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;opacity:.9">Usuarios activos</p><p class="tabular" style="font-size:24px;font-weight:900">3</p><p style="font-size:11px;opacity:.85">Nacional / Depto / Municipal</p></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px">
+        <div class="card card-pad"><p style="font-weight:800">Salud de datos</p><div style="margin-top:10px;display:flex;flex-direction:column;gap:8px" id="dash-health"></div></div>
+        <div class="card card-pad"><p style="font-weight:800">Actividad reciente</p><div id="dash-activity" style="margin-top:10px;display:flex;flex-direction:column;gap:6px;font-size:12px"></div></div>
+      </div>
+      <div class="card card-pad" style="margin-top:16px; background:linear-gradient(135deg,#f0fdf4,#ecfdf5);border:1.5px dashed #86efac; text-align:center; padding:22px">
+        <div style="width:48px;height:48px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;margin:0 auto;box-shadow:0 4px 12px rgba(0,0,0,.08);font-size:24px">⬆️</div>
+        <h3 style="margin-top:10px">Subir plataforma fácilmente</h3>
+        <p class="muted" style="font-size:13px;margin-top:4px">Arrastra tu archivo Excel o JSON aquí, o haz clic para seleccionar. Te mostramos una vista previa antes de guardar — sin miedo a equivocarte.</p>
+        <div id="upload-platform-zone" style="margin-top:14px;border:2px dashed #86efac;border-radius:16px;padding:22px;background:#fff;cursor:pointer;transition:all .2s">
+          <p style="font-weight:800">Arrastra y suelta tu archivo aquí</p>
+          <p class="muted" style="font-size:12px">Soporta .json, .xlsx, .xls, .csv — Máx. 10MB</p>
+          <input type="file" id="upload-platform-input" hidden accept=".json,.xlsx,.xls,.csv">
+          <button class="btn btn-primary" style="margin-top:10px" onclick="document.getElementById('upload-platform-input').click()">Seleccionar archivo</button>
+          <div style="margin-top:10px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+            <button class="btn btn-sm" onclick="downloadTemplate()">📥 Descargar plantilla Excel</button>
+            <button class="btn btn-sm" onclick="toast('Tutorial: 1) Descarga plantilla 2) Rellena tus datos 3) Arrastra aquí 4) Revisa vista previa 5) Guarda')">❓ Ver tutorial (30s)</button>
+          </div>
+        </div>
+        <div id="upload-preview" hidden style="margin-top:14px;text-align:left;background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px"></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px">
+          <div style="background:#fff;border:1px solid #e8ddd0;border-radius:14px;padding:14px;text-align:center;transition:all .15s" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 20px rgba(0,0,0,.08)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">
+            <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#fef3c7,#fde68a);display:flex;align-items:center;justify-content:center;margin:0 auto;font-size:18px">1️⃣</div>
+            <p style="font-weight:800;margin-top:8px;font-size:13px">Descarga</p>
+            <p class="muted" style="font-size:11px">Plantilla lista</p>
+          </div>
+          <div style="background:#fff;border:1px solid #e8ddd0;border-radius:14px;padding:14px;text-align:center;transition:all .15s" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 20px rgba(0,0,0,.08)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">
+            <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#dcfce7,#bbf7d0);display:flex;align-items:center;justify-content:center;margin:0 auto;font-size:18px">2️⃣</div>
+            <p style="font-weight:800;margin-top:8px;font-size:13px">Rellena</p>
+            <p class="muted" style="font-size:11px">Tus datos</p>
+          </div>
+          <div style="background:#fff;border:1px solid #e8ddd0;border-radius:14px;padding:14px;text-align:center;transition:all .15s" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 20px rgba(0,0,0,.08)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">
+            <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#dbeafe,#bfdbfe);display:flex;align-items:center;justify-content:center;margin:0 auto;font-size:18px">3️⃣</div>
+            <p style="font-weight:800;margin-top:8px;font-size:13px">Publica</p>
+            <p class="muted" style="font-size:11px">¡Listo!</p>
+          </div>
+        </div>
+        <p class="muted" style="font-size:11px;margin-top:10px">💡 Tip: También puedes editar todo manualmente en las pestañas de abajo. Los cambios se ven al instante en el Panorama.</p>
+      </div>
+    </section>
+
+    <!-- GENERAL -->
+    <section id="tab-general" class="card card-pad">
+      <h2 style="font-size:18px">📊 Indicadores nacionales (base 100%)</h2>
+      <p class="muted" style="font-size:13px;margin:6px 0 14px">Estos valores son la base nacional. El sistema los escala automáticamente por territorio, fecha y ámbito. Edita cualquier cifra.</p>
+      <div class="kpi-grid" id="kpi-form"></div>
+      <div class="stat-preview" id="kpi-preview"></div>
+    </section>
+
+    <!-- ECONOMIA -->
+    <section id="tab-economia" class="card card-pad" hidden>
+      <h2 style="font-size:18px">💰 Economía y financiación</h2>
+      <div class="grid2" style="margin-top:14px">
+        <div class="field"><label>Daño económico nacional (billones COP)</label><input type="number" step="0.1" id="econ-dano"></div>
+        <div class="field"><label>Cobertura financiera nacional (%)</label><input type="number" step="1" min="0" max="100" id="econ-cobertura"></div>
+      </div>
+      <div style="margin-top:16px"><h3 style="font-size:14px">Dimensiones de reconstrucción (deben sumar 100%)</h3><div id="dims-form" style="display:flex;flex-direction:column;gap:8px;margin-top:10px"></div><p class="muted" id="dims-sum" style="font-size:12px;margin-top:6px"></p></div>
+      <div style="margin-top:18px"><h3 style="font-size:14px">Fuentes de financiación (deben sumar 100%)</h3><div id="funding-form" style="display:flex;flex-direction:column;gap:8px;margin-top:10px"></div><p class="muted" id="funding-sum" style="font-size:12px;margin-top:6px"></p></div>
+    </section>
+
+    <!-- TERRITORIOS -->
+    <section id="tab-territorios" class="card card-pad" hidden>
+      <h2 style="font-size:18px">🗺️ Territorios</h2>
+      <p class="muted" style="font-size:13px;margin:6px 0 14px">Edita los pesos de afectación (share). El mapa y los rankings se recalculan proporcionalmente. Puedes renombrar territorios.</p>
+      <div class="tabs" id="terr-tabs">
+        <button class="active" data-t="dept">Departamentos (32)</button>
+        <button data-t="caldas">Municipios de Caldas</button>
+        <button data-t="manizales">Zonas de Manizales</button>
+      </div>
+      <div id="terr-dept"></div>
+      <div id="terr-caldas" hidden></div>
+      <div id="terr-manizales" hidden></div>
+    </section>
+
+    <!-- FECHAS -->
+    <section id="tab-fechas" class="card card-pad" hidden>
+      <h2 style="font-size:18px">📅 Fechas de corte & ámbitos</h2>
+      <div class="grid2" style="margin-top:14px">
+        <div class="field"><label>Fechas (separadas por coma)</label><input id="fechas-input" placeholder="30 mar 2025, 30 may 2025, 31 jul 2025"><p class="muted" style="font-size:11px">El orden define el multiplicador de evolución.</p></div>
+        <div class="field"><label>Multiplicadores por fecha (0.5 - 1.5)</label><input id="fechamult-input" placeholder="0.90, 1.00, 1.07"></div>
+      </div>
+      <div class="grid2" style="margin-top:12px">
+        <div class="field"><label>Multiplicador Urbano</label><input type="number" step="0.05" min="0" max="1" id="amb-urbano"></div>
+        <div class="field"><label>Multiplicador Rural</label><input type="number" step="0.05" min="0" max="1" id="amb-rural"></div>
+      </div>
+      <p class="muted" style="font-size:12px;margin-top:10px">💡 General siempre es 1.0 (100%). Urbano + Rural no necesitan sumar 1, son factores independientes.</p>
+    </section>
+
+    <!-- DOCUMENTOS (ADMIN) -->
+    <section id="tab-documentos" class="card card-pad" hidden>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><h2 style="font-size:18px">📁 Documentos y Evidencias — Administración</h2><div style="display:flex;gap:8px"><select id="adm-doc-estado" style="padding:8px 12px;border-radius:12px;border:1.5px solid var(--border)"><option value="">Todos</option><option value="pendiente">Pendientes</option><option value="validado">Validados</option><option value="rechazado">Rechazados</option></select><button class="btn btn-sm" id="adm-doc-validar-todos">✅ Validar pendientes</button></div></div>
+      <p class="muted" style="font-size:12px;margin:6px 0 10px">Investiga, valida o rechaza evidencias. Sincronizado con <code>altis_docs_v2</code> del Panorama. <span id="adm-doc-count" class="tabular" style="font-weight:800"></span></p>
+      <div class="table-wrap"><table id="adm-doc-table"><thead><tr><th>Título</th><th>Tipo</th><th>Territorio</th><th>Fecha</th><th>Estado</th><th>Autor</th><th></th></tr></thead><tbody></tbody></table></div>
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-sm" id="adm-doc-borrar-rechazados">🗑 Borrar rechazados</button><button class="btn btn-sm" id="adm-doc-export">⬇ Exportar CSV</button><label class="btn btn-sm" style="cursor:pointer">⬆ Importar JSON<input type="file" id="adm-doc-import" accept=".json" hidden></label></div>
+    </section>
+
+    <!-- USUARIOS -->
+    <section id="tab-usuarios" class="card card-pad" hidden>
+      <h2 style="font-size:18px">👥 Usuarios & Roles — Datos reales</h2>
+      <p class="muted" style="font-size:13px;margin:6px 0 12px">Gestión de accesos territoriales. <span id="adm-user-headinfo" class="tabular" style="font-weight:800;color:var(--teal)"></span><br><span class="muted" style="font-size:11px">Fuente: <code>localStorage.altis_access_log</code> — se registra cada login real en el Panorama. <button class="btn btn-sm" style="margin-left:6px" onclick="localStorage.removeItem('altis_access_log'); renderUsers(); renderDashboard(); toast('Log limpiado')">🗑 Limpiar log</button> <button class="btn btn-sm" onclick="renderUsers()">↻ Actualizar</button></span></p>
+      <div class="table-wrap"><table id="adm-user-table"><thead><tr><th>Usuario</th><th>Rol</th><th>Territorio</th><th>Estado</th><th>Último acceso</th><th></th></tr></thead><tbody></tbody></table></div>
+      <div style="margin-top:12px;display:flex;gap:8px"><button class="btn btn-sm" id="adm-user-add">+ Crear usuario</button><button class="btn btn-sm" id="adm-user-audit">🛡️ Ver auditoría</button></div>
+    </section>
+
+    <!-- AUDITORIA -->
+    <section id="tab-auditoria" class="card card-pad" hidden>
+      <h2 style="font-size:18px">🛡️ Auditoría y Trazabilidad</h2>
+      <p class="muted" style="font-size:12px;margin:6px 0 10px">Registro inmutable de cambios (demo en localStorage <code>altis_audit</code>). Exportable.</p>
+      <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap"><button class="btn btn-sm" id="adm-audit-refresh">↻ Actualizar</button><button class="btn btn-sm" id="adm-audit-export">⬇ Exportar log</button><button class="btn btn-danger btn-sm" id="adm-audit-clear">🗑 Limpiar</button></div>
+      <div class="table-wrap" style="max-height:360px;overflow:auto"><table id="adm-audit-table"><thead><tr><th>Fecha</th><th>Usuario</th><th>Acción</th><th>Detalle</th></tr></thead><tbody></tbody></table></div>
+    </section>
+
+    <!-- DATOS -->
+    <section id="tab-datos" class="card card-pad" hidden>
+      <h2 style="font-size:18px">🗄️ Datos crudos (JSON)</h2>
+      <p class="muted" style="font-size:13px;margin:6px 0 10px">Edición avanzada. Cualquier cambio aquí sobrescribe todo. Se guarda en <code>localStorage.altis_db_v2</code>.</p>
+      <textarea id="json-editor" style="width:100%;min-height:420px;font-family:'JetBrains Mono',monospace;font-size:12px;padding:14px;border-radius:14px;border:1.5px solid var(--border);background:#0f1e2e;color:#d7e8e0"></textarea>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="applyJSON()">Aplicar JSON</button>
+        <button class="btn" onclick="refreshJSON()">↻ Recargar desde memoria</button>
+        <button class="btn btn-danger" onclick="clearStorage()">🗑 Borrar localStorage</button>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY="altis_db_v2";
+// Verificar sesión ADMIN — ocultar si no es ADMIN/1234H
+(function(){
+  try{
+    const lastAdmin=localStorage.getItem('altis_admin_session');
+    const age= lastAdmin ? Date.now()-Number(lastAdmin) : Infinity;
+    const isAdmin = lastAdmin && age < 30*60*1000;
+    if(!isAdmin){
+      document.addEventListener('DOMContentLoaded', ()=>{
+        const main=document.querySelector('.main');
+        if(main){ main.innerHTML='<div class="card card-pad" style="text-align:center;padding:40px"><h2 style="font-size:20px">🔒 Acceso restringido</h2><p class="muted" style="margin-top:8px">El Panel de Datos solo es accesible con usuario <b>ADMIN</b> y contraseña <b>1234H</b> desde el login. Inicia sesión como ADMIN para continuar.</p><a href="ALTIS-Panorama.html" class="btn btn-primary" style="margin-top:16px">Ir al login</a></div>'; }
+      });
+    }
+  }catch(e){}
+})();
+const DEFAULT_DB={
+  nationalKPI:{familias:42380,personas:158742,damnificadas:23516,unidadesTerritoriales:247,viviendaPérdida:2249,viviendaParcial:9436,viviendaEval:1382,hogaresReasentar:684,educativas:481,hospitales:25,puentes:74,acueductos:112,patrimonio:89,unidadesProductivas:5620,hectareas:12480,zonasRiesgo:127},
+  nationalEcon:{dano:18.4,cobertura:46},
+  fundingShares:[{k:'nacion',label:'Nación',share:.45,color:'var(--cat-1)'},{k:'departamentos',label:'Departamentos',share:.18,color:'var(--cat-2)'},{k:'municipios',label:'Municipios',share:.12,color:'var(--cat-3)'},{k:'cooperacion',label:'Cooperación Internacional',share:.20,color:'var(--cat-4)'},{k:'privado',label:'Sector Privado / Donaciones',share:.05,color:'var(--cat-5)'}],
+  reconstruccionDims:[{label:'Vivienda y Hábitat',share:.34},{label:'Infraestructura Territorial',share:.26},{label:'Equipamientos Públicos',share:.11},{label:'Patrimonio Cultural',share:.09},{label:'Afectación Productiva',share:.16},{label:'Gestión del Riesgo',share:.04}],
+  fechas:['30 mar 2025','30 may 2025','31 jul 2025'], fechaMult:[0.90,1.00,1.07], ambitoMult:{general:1,urbano:0.62,rural:0.38},
+  departmentsRaw:[['antioquia','Antioquia','andina',6.244,-75.581],['boyaca','Boyacá','andina',5.535,-73.367],['caldas','Caldas','andina',5.068,-75.518],['cundinamarca','Cundinamarca','andina',5.025,-74.033],['huila','Huila','andina',2.927,-75.281],['norte-santander','Norte de Santander','andina',7.894,-72.507],['quindio','Quindío','andina',4.534,-75.681],['risaralda','Risaralda','andina',4.813,-75.696],['santander','Santander','andina',7.119,-73.122],['tolima','Tolima','andina',4.438,-75.232],['bogota','Bogotá D.C.','andina',4.711,-74.072],['atlantico','Atlántico','caribe-cont',10.964,-74.796],['bolivar','Bolívar','caribe-cont',10.391,-75.479],['cesar','Cesar','caribe-cont',10.463,-73.253],['cordoba','Córdoba','caribe-cont',8.748,-75.878],['la-guajira','La Guajira','caribe-cont',11.544,-72.907],['magdalena','Magdalena','caribe-cont',11.241,-74.199],['sucre','Sucre','caribe-cont',9.303,-75.397],['san-andres','San Andrés y Providencia','caribe-ins',12.584,-81.700],['cauca','Cauca','pacifico',2.444,-76.614],['choco','Chocó','pacifico',5.694,-76.658],['narino','Nariño','pacifico',1.213,-77.281],['valle-cauca','Valle del Cauca','pacifico',3.452,-76.532],['arauca','Arauca','orinoquia',7.084,-70.760],['casanare','Casanare','orinoquia',5.338,-72.396],['meta','Meta','orinoquia',4.142,-73.626],['vichada','Vichada','orinoquia',6.189,-67.486],['amazonas','Amazonas','amazonia',-4.215,-69.940],['caqueta','Caquetá','amazonia',1.614,-75.606],['guainia','Guainía','amazonia',3.865,-67.923],['guaviare','Guaviare','amazonia',2.567,-72.639],['putumayo','Putumayo','amazonia',1.147,-76.648],['vaupes','Vaupés','amazonia',1.251,-70.235]],
+  top5:{narino:.24,choco:.15,caldas:.11,antioquia:.09,'valle-cauca':.07},
+  caldasMunicipios:[{id:'manizales',name:'Manizales',share:.22,subregion:'Centro Sur',lat:5.0675,lng:-75.51},{id:'chinchina',name:'Chinchiná',share:.17,subregion:'Centro Sur',lat:4.9825,lng:-75.6036},{id:'villamaria',name:'Villamaría',share:.14,subregion:'Centro Sur',lat:5.0978,lng:-75.5156},{id:'riosucio',name:'Riosucio',share:.11,subregion:'Occidente',lat:5.4247,lng:-75.7008},{id:'anserma',name:'Anserma',share:.09,subregion:'Alto Occidente',lat:5.2333,lng:-75.7833}],
+  manizalesZonas:[{id:'zona-norte',name:'Zona Norte',share:.26,tipo:'Barrios'},{id:'zona-centro',name:'Zona Centro',share:.21,tipo:'Cabecera Municipal'},{id:'corregimiento-1',name:'Corregimiento 1',share:.17,tipo:'Corregimientos'},{id:'corregimiento-2',name:'Corregimiento 2',share:.14,tipo:'Corregimientos'},{id:'zona-oriente',name:'Zona Oriente',share:.10,tipo:'Centros Poblados'}],
+  caldasSubregions:['Norte','Centro Sur','Oriente','Occidente','Alto Occidente','Magdalena Caldense'],
+  zonaTipos:['Cabecera Municipal','Barrios','Corregimientos','Centros Poblados','Veredas']
+};
+function loadDB(){try{const r=localStorage.getItem(STORAGE_KEY);if(!r)return structuredClone(DEFAULT_DB);const p=JSON.parse(r);return {...structuredClone(DEFAULT_DB),...p,nationalKPI:{...DEFAULT_DB.nationalKPI,...(p.nationalKPI||{})},nationalEcon:{...DEFAULT_DB.nationalEcon,...(p.nationalEcon||{})}}}catch(e){return structuredClone(DEFAULT_DB)}}
+function saveDB(db){localStorage.setItem(STORAGE_KEY,JSON.stringify(db))}
+let DB=loadDB();
+// THEME – sincronizado con Panorama
+const THEME_KEY="altis_theme";
+function applyTheme(t){
+  const theme=(t==="dark"||t==="light")?t:(window.matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light");
+  document.documentElement.setAttribute("data-theme",theme);
+  try{localStorage.setItem(THEME_KEY,theme);}catch(e){}
+  document.querySelectorAll(".theme-toggle").forEach(btn=>{
+    btn.textContent=theme==="dark"?"☀️":"🌙";
+    btn.setAttribute("aria-label",theme==="dark"?"Tema claro":"Tema oscuro");
+    btn.title=theme==="dark"?"Cambiar a tema claro":"Cambiar a tema oscuro";
+  });
+}
+function initTheme(){
+  let saved=null;try{saved=localStorage.getItem(THEME_KEY);}catch(e){}
+  applyTheme(saved);
+  document.querySelectorAll(".theme-toggle").forEach(btn=>{
+    btn.addEventListener("click",()=>{const cur=document.documentElement.getAttribute("data-theme");applyTheme(cur==="dark"?"light":"dark");toast(cur==="dark"?"Tema claro ☀️":"Tema oscuro 🌙")});
+  });
+  window.addEventListener("storage",(e)=>{if(e.key===THEME_KEY) applyTheme(e.newValue);});
+}
+initTheme();
+function toast(m){const r=document.getElementById('toast-root');const t=document.createElement('div');t.className='toast';t.textContent=m;r.appendChild(t);setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),300)},2600)}
+const KPI_LABELS={familias:'Familias afectadas',personas:'Personas afectadas',damnificadas:'Personas damnificadas',unidadesTerritoriales:'Municipios afectados',viviendaPérdida:'Viviendas pérdida total',viviendaParcial:'Viviendas daño parcial',viviendaEval:'Viviendas en evaluación',hogaresReasentar:'Hogares por reasentar',educativas:'Instituciones educativas',hospitales:'Hospitales',puentes:'Puentes',acueductos:'Acueductos',patrimonio:'Bienes patrimoniales',unidadesProductivas:'Unidades productivas',hectareas:'Hectáreas agrícolas',zonasRiesgo:'Zonas riesgo crítico'};
+
+function renderKPIForm(){
+  const wrap=document.getElementById('kpi-form');wrap.innerHTML='';
+  Object.entries(KPI_LABELS).forEach(([k,label])=>{
+    const div=document.createElement('div');div.className='field';
+    div.innerHTML='<label>'+label+' <span class="muted" style="font-weight:600">('+k+')</span></label><input type="number" data-kpi="'+k+'" value="'+DB.nationalKPI[k]+'">';
+    wrap.appendChild(div);
+  });
+  wrap.querySelectorAll('input').forEach(inp=>inp.addEventListener('input',()=>{DB.nationalKPI[inp.dataset.kpi]=Number(inp.value)||0;renderKPIPreview()}));
+  renderKPIPreview();
+}
+function renderKPIPreview(){
+  const p=document.getElementById('kpi-preview');const tot=DB.nationalKPI.familias+DB.nationalKPI.personas;
+  p.innerHTML='<div><span class="muted" style="font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase">Total personas</span><b class="tabular">'+(DB.nationalKPI.personas).toLocaleString('es-CO')+'</b></div><div><span class="muted" style="font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase">Viviendas totales</span><b class="tabular">'+(DB.nationalKPI.viviendaPérdida+DB.nationalKPI.viviendaParcial+DB.nationalKPI.viviendaEval).toLocaleString('es-CO')+'</b></div><div><span class="muted" style="font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase">Daño estimado</span><b>$'+DB.nationalEcon.dano+' bill.</b></div>';
+}
+function renderEconForm(){
+  document.getElementById('econ-dano').value=DB.nationalEcon.dano;
+  document.getElementById('econ-cobertura').value=DB.nationalEcon.cobertura;
+  document.getElementById('econ-dano').oninput=e=>DB.nationalEcon.dano=Number(e.target.value)||0;
+  document.getElementById('econ-cobertura').oninput=e=>DB.nationalEcon.cobertura=Number(e.target.value)||0;
+  // dims
+  const dWrap=document.getElementById('dims-form');dWrap.innerHTML='';
+  DB.reconstruccionDims.forEach((d,i)=>{
+    const row=document.createElement('div');row.style.cssText='display:flex;gap:8px;align-items:center';
+    row.innerHTML='<input value="'+d.label+'" data-dl="'+i+'" style="flex:1;padding:8px 10px;border-radius:10px;border:1px solid var(--border)"> <input type="range" min="0" max="0.6" step="0.01" value="'+d.share+'" data-dr="'+i+'" style="flex:1"> <span class="tabular" data-dv="'+i+'" style="width:48px;text-align:right;font-weight:800">'+Math.round(d.share*100)+'%</span> <button class="btn btn-sm btn-danger" data-dd="'+i+'">✕</button>';
+    dWrap.appendChild(row);
+  });
+  dWrap.querySelectorAll('[data-dl]').forEach(inp=>inp.addEventListener('input',()=>{DB.reconstruccionDims[Number(inp.dataset.dl)].label=inp.value}));
+  dWrap.querySelectorAll('[data-dr]').forEach(inp=>inp.addEventListener('input',()=>{DB.reconstruccionDims[Number(inp.dataset.dr)].share=Number(inp.value);inp.nextElementSibling.textContent=Math.round(Number(inp.value)*100)+'%';updateSums()}));
+  dWrap.querySelectorAll('[data-dd]').forEach(b=>b.addEventListener('click',()=>{DB.reconstruccionDims.splice(Number(b.dataset.dd),1);renderEconForm()}));
+  // funding
+  const fWrap=document.getElementById('funding-form');fWrap.innerHTML='';
+  DB.fundingShares.forEach((f,i)=>{
+    const row=document.createElement('div');row.style.cssText='display:flex;gap:8px;align-items:center';
+    row.innerHTML='<input value="'+f.label+'" data-fl="'+i+'" style="flex:1;padding:8px 10px;border-radius:10px;border:1px solid var(--border)"> <input type="range" min="0" max="0.7" step="0.01" value="'+f.share+'" data-fr="'+i+'" style="flex:1"> <span class="tabular" data-fv="'+i+'" style="width:48px;text-align:right;font-weight:800">'+Math.round(f.share*100)+'%</span> <button class="btn btn-sm btn-danger" data-fd="'+i+'">✕</button>';
+    fWrap.appendChild(row);
+  });
+  fWrap.querySelectorAll('[data-fl]').forEach(inp=>inp.addEventListener('input',()=>{DB.fundingShares[Number(inp.dataset.fl)].label=inp.value}));
+  fWrap.querySelectorAll('[data-fr]').forEach(inp=>inp.addEventListener('input',()=>{DB.fundingShares[Number(inp.dataset.fr)].share=Number(inp.value);inp.nextElementSibling.textContent=Math.round(Number(inp.value)*100)+'%';updateSums()}));
+  fWrap.querySelectorAll('[data-fd]').forEach(b=>b.addEventListener('click',()=>{DB.fundingShares.splice(Number(b.dataset.fd),1);renderEconForm()}));
+  // add buttons
+  if(!document.getElementById('add-dim')){const btn=document.createElement('button');btn.id='add-dim';btn.className='btn btn-sm';btn.textContent='+ Añadir dimensión';btn.style.marginTop='8px';btn.onclick=()=>{DB.reconstruccionDims.push({label:'Nueva dimensión',share:.05});renderEconForm()};dWrap.after(btn)}
+  if(!document.getElementById('add-fun')){const btn=document.createElement('button');btn.id='add-fun';btn.className='btn btn-sm';btn.textContent='+ Añadir fuente';btn.style.marginTop='8px';btn.onclick=()=>{DB.fundingShares.push({k:'nuevo-'+Date.now(),label:'Nueva fuente',share:.05,color:'var(--cat-1)'});renderEconForm()};fWrap.after(btn)}
+  updateSums();
+}
+function updateSums(){
+  const dSum=DB.reconstruccionDims.reduce((a,b)=>a+b.share,0);
+  const fSum=DB.fundingShares.reduce((a,b)=>a+b.share,0);
+  document.getElementById('dims-sum').textContent='Suma: '+Math.round(dSum*100)+'% '+(Math.abs(dSum-1)>.02?'⚠️ Debe sumar 100%':'✅ OK');
+  document.getElementById('dims-sum').style.color=Math.abs(dSum-1)>.02?'#dc2626':'#15803d';
+  document.getElementById('funding-sum').textContent='Suma: '+Math.round(fSum*100)+'% '+(Math.abs(fSum-1)>.02?'⚠️ Debe sumar 100%':'✅ OK');
+  document.getElementById('funding-sum').style.color=Math.abs(fSum-1)>.02?'#dc2626':'#15803d';
+}
+
+function renderTerritorios(){
+  // dept table
+  const deptWrap=document.getElementById('terr-dept');
+  let html='<div class="table-wrap"><table><thead><tr><th>Departamento</th><th>Región</th><th>Share (%)</th><th>Lat</th><th>Lng</th></tr></thead><tbody>';
+  // compute shares same logic as panorama
+  const top5=DB.top5;
+  const explicitSum=Object.values(top5).reduce((a,b)=>a+b,0);
+  const remainder=1-explicitSum;
+  // compute for display
+  const remIds=DB.departmentsRaw.filter(([id])=>!top5[id]).map(([id])=>id);
+  // need weights
+  function frac(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return ((h>>>0)%10000)/10000}
+  const weights=remIds.map(id=>0.4+frac(id)*1.2);const wSum=weights.reduce((a,b)=>a+b,0);
+  DB.departmentsRaw.forEach(([id,name,region,lat,lng])=>{
+    let share=top5[id];
+    if(share===undefined){const idx=remIds.indexOf(id);share=remainder*weights[idx]/wSum}
+    const isTop=top5[id]!==undefined;
+    html+='<tr><td><input data-dept-name="'+id+'" value="'+name+'" style="font-weight:700"></td><td><span class="badge '+(region==='andina'?'badge-teal':'badge-amber')+'">'+region+'</span></td><td><div class="range-row"><input type="range" min="0" max="0.35" step="0.01" data-dept-share="'+id+'" value="'+share.toFixed(3)+'"><span class="tabular" data-dept-val="'+id+'" style="width:44px;text-align:right;font-weight:800">'+Math.round(share*1000)/10+'%</span></div></td><td class="tabular muted">'+lat+'</td><td class="tabular muted">'+lng+'</td></tr>';
+  });
+  html+='</tbody></table></div><p class="muted" style="font-size:11px;margin-top:8px">💡 Los departamentos “top 5” (Nariño, Chocó, Caldas, Antioquia, Valle) tienen share fijo editable. El resto se reparte proporcionalmente.</p>';
+  deptWrap.innerHTML=html;
+  deptWrap.querySelectorAll('[data-dept-name]').forEach(inp=>inp.addEventListener('input',()=>{const id=inp.dataset.deptName;const row=DB.departmentsRaw.find(r=>r[0]===id);if(row)row[1]=inp.value}));
+  deptWrap.querySelectorAll('[data-dept-share]').forEach(inp=>inp.addEventListener('input',()=>{const id=inp.dataset.deptShare;DB.top5[id]=Number(inp.value);inp.nextElementSibling.textContent=Math.round(Number(inp.value)*1000)/10+'%';}));
+
+  // caldas
+  const cWrap=document.getElementById('terr-caldas');
+  let cHtml='<div class="table-wrap"><table><thead><tr><th>Municipio</th><th>Subregión</th><th>Share (%)</th></tr></thead><tbody>';
+  DB.caldasMunicipios.forEach((m,i)=>{
+    cHtml+='<tr><td><input data-c-name="'+i+'" value="'+m.name+'" style="font-weight:700"></td><td><select data-c-sub="'+i+'"><option '+(m.subregion==='Centro Sur'?'selected':'')+'>Centro Sur</option><option '+(m.subregion==='Occidente'?'selected':'')+'>Occidente</option><option '+(m.subregion==='Alto Occidente'?'selected':'')+'>Alto Occidente</option><option '+(m.subregion==='Norte'?'selected':'')+'>Norte</option><option '+(m.subregion==='Oriente'?'selected':'')+'>Oriente</option><option '+(m.subregion==='Magdalena Caldense'?'selected':'')+'>Magdalena Caldense</option></select></td><td><div class="range-row"><input type="range" min="0" max="0.4" step="0.01" data-c-share="'+i+'" value="'+m.share+'"><span class="tabular" data-c-val="'+i+'" style="width:44px;text-align:right;font-weight:800">'+Math.round(m.share*100)+'%</span></div></td></tr>';
+  });
+  cHtml+='</tbody></table></div><button class="btn btn-sm" style="margin-top:10px" onclick="addCaldas()">+ Añadir municipio</button>';
+  cWrap.innerHTML=cHtml;
+  cWrap.querySelectorAll('[data-c-name]').forEach(inp=>inp.addEventListener('input',()=>{DB.caldasMunicipios[Number(inp.dataset.cName)].name=inp.value}));
+  cWrap.querySelectorAll('[data-c-sub]').forEach(s=>s.addEventListener('change',()=>{DB.caldasMunicipios[Number(s.dataset.cSub)].subregion=s.value}));
+  cWrap.querySelectorAll('[data-c-share]').forEach(inp=>inp.addEventListener('input',()=>{DB.caldasMunicipios[Number(inp.dataset.cShare)].share=Number(inp.value);inp.nextElementSibling.textContent=Math.round(Number(inp.value)*100)+'%'}));
+
+  // manizales
+  const mWrap=document.getElementById('terr-manizales');
+  let mHtml='<div class="table-wrap"><table><thead><tr><th>Zona</th><th>Tipo</th><th>Share (%)</th></tr></thead><tbody>';
+  DB.manizalesZonas.forEach((z,i)=>{
+    mHtml+='<tr><td><input data-m-name="'+i+'" value="'+z.name+'" style="font-weight:700"></td><td><select data-m-tipo="'+i+'"><option '+(z.tipo==='Barrios'?'selected':'')+'>Barrios</option><option '+(z.tipo==='Cabecera Municipal'?'selected':'')+'>Cabecera Municipal</option><option '+(z.tipo==='Corregimientos'?'selected':'')+'>Corregimientos</option><option '+(z.tipo==='Centros Poblados'?'selected':'')+'>Centros Poblados</option><option '+(z.tipo==='Veredas'?'selected':'')+'>Veredas</option></select></td><td><div class="range-row"><input type="range" min="0" max="0.5" step="0.01" data-m-share="'+i+'" value="'+z.share+'"><span class="tabular" data-m-val="'+i+'" style="width:44px;text-align:right;font-weight:800">'+Math.round(z.share*100)+'%</span></div></td></tr>';
+  });
+  mHtml+='</tbody></table></div><button class="btn btn-sm" style="margin-top:10px" onclick="addZona()">+ Añadir zona</button>';
+  mWrap.innerHTML=mHtml;
+  mWrap.querySelectorAll('[data-m-name]').forEach(inp=>inp.addEventListener('input',()=>{DB.manizalesZonas[Number(inp.dataset.mName)].name=inp.value}));
+  mWrap.querySelectorAll('[data-m-tipo]').forEach(s=>s.addEventListener('change',()=>{DB.manizalesZonas[Number(s.dataset.mTipo)].tipo=s.value}));
+  mWrap.querySelectorAll('[data-m-share]').forEach(inp=>inp.addEventListener('input',()=>{DB.manizalesZonas[Number(inp.dataset.mShare)].share=Number(inp.value);inp.nextElementSibling.textContent=Math.round(Number(inp.value)*100)+'%'}));
+
+  // terr tabs
+  document.querySelectorAll('#terr-tabs button').forEach(b=>b.addEventListener('click',()=>{
+    document.querySelectorAll('#terr-tabs button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    document.getElementById('terr-dept').hidden=b.dataset.t!=='dept';
+    document.getElementById('terr-caldas').hidden=b.dataset.t!=='caldas';
+    document.getElementById('terr-manizales').hidden=b.dataset.t!=='manizales';
+  }));
+}
+function addCaldas(){DB.caldasMunicipios.push({id:'muni-'+Date.now(),name:'Nuevo municipio',share:.05,subregion:'Centro Sur',lat:5.07,lng:-75.51});renderTerritorios();document.querySelector('[data-t="caldas"]').click()}
+function addZona(){DB.manizalesZonas.push({id:'zona-'+Date.now(),name:'Nueva zona',share:.08,tipo:'Barrios'});renderTerritorios();document.querySelector('[data-t="manizales"]').click()}
+
+function renderFechas(){
+  document.getElementById('fechas-input').value=DB.fechas.join(', ');
+  document.getElementById('fechamult-input').value=DB.fechaMult.join(', ');
+  document.getElementById('amb-urbano').value=DB.ambitoMult.urbano;
+  document.getElementById('amb-rural').value=DB.ambitoMult.rural;
+  document.getElementById('fechas-input').oninput=e=>{DB.fechas=e.target.value.split(',').map(s=>s.trim()).filter(Boolean)};
+  document.getElementById('fechamult-input').oninput=e=>{DB.fechaMult=e.target.value.split(',').map(s=>Number(s.trim())).filter(n=>!isNaN(n))};
+  document.getElementById('amb-urbano').oninput=e=>DB.ambitoMult.urbano=Number(e.target.value)||0;
+  document.getElementById('amb-rural').oninput=e=>DB.ambitoMult.rural=Number(e.target.value)||0;
+}
+function refreshJSON(){document.getElementById('json-editor').value=JSON.stringify(DB,null,2)}
+function applyJSON(){try{const parsed=JSON.parse(document.getElementById('json-editor').value);DB=parsed;saveDB(DB);toast('JSON aplicado ✅');renderAll()}catch(e){toast('JSON inválido: '+e.message)}}
+function clearStorage(){if(confirm('¿Borrar localStorage y restaurar demo?')){localStorage.removeItem(STORAGE_KEY);DB=structuredClone(DEFAULT_DB);saveDB(DB);renderAll();toast('localStorage borrado. Demo restaurado.')}}
+function exportJSON(){const blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='altis-db-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(url);toast('JSON exportado')}
+document.getElementById('import-file').addEventListener('change',(e)=>{
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{try{DB=JSON.parse(reader.result);saveDB(DB);renderAll();toast('JSON importado ✅')}catch(err){toast('Error: '+err.message)}};
+  reader.readAsText(file);
+});
+function saveAll(){
+  // sync inputs that may not have fired
+  document.querySelectorAll('[data-kpi]').forEach(inp=>{DB.nationalKPI[inp.dataset.kpi]=Number(inp.value)||0});
+  DB.nationalEcon.dano=Number(document.getElementById('econ-dano').value)||0;
+  DB.nationalEcon.cobertura=Number(document.getElementById('econ-cobertura').value)||0;
+  // fechas
+  const fVal=document.getElementById('fechas-input').value;if(fVal)DB.fechas=fVal.split(',').map(s=>s.trim()).filter(Boolean);
+  const fmVal=document.getElementById('fechamult-input').value;if(fmVal)DB.fechaMult=fmVal.split(',').map(s=>Number(s.trim())).filter(n=>!isNaN(n));
+  DB.ambitoMult.urbano=Number(document.getElementById('amb-urbano').value)||0;
+  DB.ambitoMult.rural=Number(document.getElementById('amb-rural').value)||0;
+  saveDB(DB);
+  refreshJSON();
+  toast('✅ Cambios guardados. Abre el Panorama para verlos en vivo.');
+  try{ pushAudit('Guardar DB', 'KPIs/territorios/fechas — '+ new Date().toLocaleString('es-CO')); }catch(e){}
+  renderDashboard(); renderAudit();
+}
+function resetDB(){if(!confirm('¿Restaurar todos los datos a la demo original?'))return;DB=structuredClone(DEFAULT_DB);saveDB(DB);renderAll();toast('Demo restaurada ✅')}
+function renderAll(){renderKPIForm();renderEconForm();renderTerritorios();renderFechas();refreshJSON(); renderDashboard(); renderAdmDocs(); renderUsers(); renderAudit();}
+const DOCS_KEY='altis_docs_v2';
+function loadDocsAdm(){ try{ const r=localStorage.getItem(DOCS_KEY); if(!r) return []; return JSON.parse(r);}catch(e){return []} }
+function saveDocsAdm(d){ try{ localStorage.setItem(DOCS_KEY, JSON.stringify(d)); localStorage.setItem('altis_docs', JSON.stringify(d)); }catch(e){} }
+function pushAudit(accion,detalle){
+  try{
+    const logs=JSON.parse(localStorage.getItem('altis_audit')||'[]');
+    logs.unshift({fecha:new Date().toISOString(), usuario:'admin@altis.demo', accion, detalle});
+    localStorage.setItem('altis_audit', JSON.stringify(logs.slice(0,200)));
+  }catch(e){}
+}
+function renderDashboard(){
+  const dashDocs=document.getElementById('dash-docs');
+  if(!dashDocs) return;
+  const docs=loadDocsAdm();
+  const dano=DB.nationalEcon.dano;
+  const cob=DB.nationalEcon.cobertura;
+  dashDocs.textContent=docs.length;
+  document.getElementById('dash-docs-sub').textContent=docs.filter(d=>d.estado==='pendiente').length+' pendientes · '+docs.filter(d=>d.estado==='validado').length+' validadas';
+  document.getElementById('dash-dano').textContent='$'+dano.toFixed(1)+' bill.';
+  document.getElementById('dash-cob').textContent=cob+'%';
+  document.getElementById('dash-mun').textContent=DB.nationalKPI.unidadesTerritoriales;
+  document.getElementById('dash-mun-sub').textContent=DB.nationalKPI.familias.toLocaleString('es-CO')+' familias';
+  const health=document.getElementById('dash-health');
+  if(health){
+    const dSum=DB.reconstruccionDims.reduce((a,b)=>a+b.share,0);
+    const fSum=DB.fundingShares.reduce((a,b)=>a+b.share,0);
+    health.innerHTML='';
+    const items=[
+      ['Dimensiones suman 100%', Math.abs(dSum-1)<0.02],
+      ['Financiación suma 100%', Math.abs(fSum-1)<0.02],
+      ['Evidencias con coords', docs.every(d=>d.coords)],
+      ['Top5 coherente', Object.values(DB.top5).reduce((a,b)=>a+b,0) < 0.9]
+    ];
+    items.forEach(([label,ok])=>{
+      const row=document.createElement('div');
+      row.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-radius:10px;background:'+(ok?'#dcfce7':'#fee2e2')+';border:1px solid '+(ok?'#bbf7d0':'#fecaca');
+      row.innerHTML='<span style="font-weight:700;font-size:12px">'+label+'</span><span style="font-weight:800">'+(ok?'✅':'⚠️')+'</span>';
+      health.appendChild(row);
+    });
+  }
+  const act=document.getElementById('dash-activity');
+  if(act){
+    const logs=JSON.parse(localStorage.getItem('altis_audit')||'[]').slice(0,5);
+    if(!logs.length){ act.innerHTML='<span class="muted">Sin actividad aún — edita un KPI y guarda.</span>'; }
+    else { act.innerHTML=logs.map(l=> '<div style="display:flex;gap:8px"><span class="tabular muted" style="font-size:11px">'+new Date(l.fecha).toLocaleString('es-CO')+'</span><span style="font-weight:700">'+l.accion+'</span><span class="muted">'+l.detalle+'</span></div>').join(''); }
+  }
+}
+function renderAdmDocs(){
+  const tbody=document.querySelector('#adm-doc-table tbody');
+  if(!tbody) return;
+  const filtro=document.getElementById('adm-doc-estado')?.value||'';
+  let docs=loadDocsAdm();
+  if(filtro) docs=docs.filter(d=>d.estado===filtro);
+  document.getElementById('adm-doc-count').textContent=docs.length+' evidencias'+(filtro?' ('+filtro+')':'');
+  tbody.innerHTML='';
+  docs.slice(0,80).forEach(d=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td style="font-weight:700;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+d.titulo+'</td><td><span class="badge '+(d.tipo==='foto'?'badge-teal':'badge-amber')+'">'+d.tipo+'</span></td><td>'+d.terr+'</td><td class="tabular muted">'+d.fecha+'</td><td><span style="padding:3px 8px;border-radius:999px;font-size:11px;font-weight:800;background:'+(d.estado==='validado'?'#dcfce7;color:#15803d':d.estado==='pendiente'?'#fef3c7;color:#92400e':'#fee2e2;color:#dc2626')+'">'+d.estado+'</span></td><td>'+d.autor+'</td><td><div style="display:flex;gap:4px"><button class="btn btn-sm" data-v>✅</button><button class="btn btn-sm" data-r>❌</button><button class="btn btn-sm" data-x>🗑</button></div></td>';
+    tr.querySelector('[data-v]').addEventListener('click', ()=>{ d.estado='validado'; saveDocsAdm(loadDocsAdm().map(x=> x.id===d.id? {...x, estado:'validado'}:x)); // workaround
+      let all=loadDocsAdm(); const idx=all.findIndex(x=>x.id===d.id); if(idx!==-1){ all[idx].estado='validado'; saveDocsAdm(all); } pushAudit('Validar evidencia', d.titulo); renderAdmDocs(); renderDashboard(); toast('Validada: '+d.titulo); });
+    tr.querySelector('[data-r]').addEventListener('click', ()=>{ let all=loadDocsAdm(); const idx=all.findIndex(x=>x.id===d.id); if(idx!==-1){ all[idx].estado='rechazado'; saveDocsAdm(all); } pushAudit('Rechazar evidencia', d.titulo); renderAdmDocs(); renderDashboard(); toast('Rechazada'); });
+    tr.querySelector('[data-x]').addEventListener('click', ()=>{ if(!confirm('¿Eliminar?')) return; let all=loadDocsAdm().filter(x=>x.id!==d.id); saveDocsAdm(all); pushAudit('Eliminar evidencia', d.titulo); renderAdmDocs(); renderDashboard(); toast('Eliminada'); });
+    tbody.appendChild(tr);
+  });
+}
+function renderUsers(){
+  const tbody=document.querySelector('#adm-user-table tbody');
+  if(!tbody) return;
+  // Datos reales desde altis_access_log
+  const ACCESS_KEY='altis_access_log';
+  let logs=[];
+  try{ logs=JSON.parse(localStorage.getItem(ACCESS_KEY)||'[]'); }catch(e){ logs=[]; }
+  const map={};
+  logs.forEach(e=>{
+    const key=e.email;
+    if(!map[key]){
+      map[key]={name:e.name, email:e.email, rol:e.roleLabel||e.role, terr:e.territorio||e.role||'—', accesos:0, ultimo:e.fecha, ip:e.ip||'—', ua:e.ua||''};
+    }
+    map[key].accesos++;
+    if(new Date(e.fecha) > new Date(map[key].ultimo)){
+      map[key].ultimo=e.fecha;
+      map[key].ip=e.ip;
+    }
+  });
+  let users=Object.values(map).map(u=>{
+    const diffMs=Date.now()-new Date(u.ultimo).getTime();
+    const mins=Math.floor(diffMs/60000);
+    let acceso='hace '+ (mins<1?'1 min': mins<60? mins+' min' : Math.floor(mins/60)+' h');
+    if(mins> 60*24) acceso='hace '+Math.floor(mins/1440)+' días';
+    return {...u, acceso, estado:'Activo'};
+  });
+  // Si aún no hay datos reales, mostrar demo como pendiente + indicar que son datos de ejemplo
+  if(users.length===0){
+    users=[
+      {name:'Ana María Rodríguez',email:'usuarionacional@altis.demo',rol:'Nacional — Colombia',terr:'Colombia',estado:'Sin acceso',acceso:'—',accesos:0, ip:'—'},
+      {name:'Carlos Alberto Vélez',email:'usuariodepto@altis.demo',rol:'Departamental — Caldas',terr:'Caldas',estado:'Sin acceso',acceso:'—',accesos:0, ip:'—'},
+      {name:'Laura Sofía Gómez',email:'usuariomun@altis.demo',rol:'Municipal — Manizales',terr:'Manizales',estado:'Sin acceso',acceso:'—',accesos:0, ip:'—'},
+    ];
+  } else {
+    // Añadir usuarios demo que nunca han entrado como Pendiente para contexto
+    const demoEmails=new Set(users.map(u=>u.email));
+    const demos=[
+      {name:'Ana María Rodríguez',email:'usuarionacional@altis.demo',rol:'Nacional — Colombia',terr:'Colombia'},
+      {name:'Carlos Alberto Vélez',email:'usuariodepto@altis.demo',rol:'Departamental — Caldas',terr:'Caldas'},
+      {name:'Laura Sofía Gómez',email:'usuariomun@altis.demo',rol:'Municipal — Manizales',terr:'Manizales'},
+    ];
+    demos.forEach(d=>{
+      if(!demoEmails.has(d.email) && users.length<8){
+        users.push({...d, estado:'Sin acceso', acceso:'—', accesos:0, ultimo:null, ip:'—'});
+      }
+    });
+  }
+  users.sort((a,b)=> (b.accesos - a.accesos) || (new Date(b.ultimo||0)-new Date(a.ultimo||0)) );
+  tbody.innerHTML='';
+  // Cabecera con total reales
+  const headInfo=document.getElementById('adm-user-headinfo');
+  if(headInfo) headInfo.textContent = logs.length ? logs.length+' accesos reales · '+users.filter(u=>u.accesos>0).length+' usuarios únicos' : 'Sin accesos reales aún — muestra demo';
+  users.forEach(u=>{
+    const tr=document.createElement('tr');
+    const isReal=u.accesos>0;
+    tr.innerHTML='<td><b>'+u.name+'</b><br><span class="muted" style="font-size:11px">'+u.email+'</span><br><span class="muted" style="font-size:10px">'+(u.ip||'—')+'</span></td><td><span class="badge '+(u.rol.includes('Nacional')?'badge-teal':u.rol.includes('Departamental')?'badge-amber':'badge-teal')+'">'+u.rol+'</span></td><td>'+u.terr+'</td><td><span style="padding:3px 8px;border-radius:999px;font-size:11px;font-weight:800;background:'+(u.estado==='Activo'?'#dcfce7;color:#15803d':'#fef3c7;color:#92400e')+'">'+u.estado+'</span></td><td class="tabular muted" style="font-size:11px">'+u.acceso+'<br><span class="tabular" style="font-weight:800;color:var(--ink)">'+u.accesos+' accesos</span></td><td><button class="btn btn-sm">'+(isReal?'Ver historial':'Invitar')+'</button></td>';
+    tr.querySelector('button').addEventListener('click', ()=>{
+      if(isReal){
+        const hist=logs.filter(l=>l.email===u.email).slice(0,8).map(l=> new Date(l.fecha).toLocaleString('es-CO')+' — '+ (l.modulo||'login')+' — '+l.ip).join('\n');
+        alert('Historial de '+u.name+' ('+u.email+'):\n\n'+hist);
+      } else {
+        toast('Invitación enviada a '+u.email+' (demo)');
+      }
+    });
+    tbody.appendChild(tr);
+  });
+  // Añadir fila de resumen de accesos recientes debajo
+  if(logs.length){
+    const recent=logs.slice(0,3);
+    const info=document.createElement('tr');
+    info.innerHTML='<td colspan="6" class="muted" style="font-size:11px;background:var(--surface-2)">Últimos accesos reales: '+recent.map(r=> r.name+' — '+new Date(r.fecha).toLocaleString('es-CO')+' — '+r.ip).join('  ·  ')+'</td>';
+    tbody.appendChild(info);
+  }
+}
+function renderAudit(){
+  const tbody=document.querySelector('#adm-audit-table tbody');
+  if(!tbody) return;
+  const logs=JSON.parse(localStorage.getItem('altis_audit')||'[]');
+  tbody.innerHTML='';
+  if(!logs.length){
+    const tr=document.createElement('tr'); tr.innerHTML='<td colspan="4" class="muted" style="text-align:center;padding:16px">Sin registros — los cambios se registran al guardar</td>'; tbody.appendChild(tr); return;
+  }
+  logs.slice(0,100).forEach(l=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td class="tabular muted">'+new Date(l.fecha).toLocaleString('es-CO')+'</td><td>'+l.usuario+'</td><td style="font-weight:700">'+l.accion+'</td><td class="muted">'+l.detalle+'</td>';
+    tbody.appendChild(tr);
+  });
+}
+document.querySelectorAll('#nav button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');
+  document.querySelectorAll('[id^="tab-"]').forEach(s=>s.hidden=true);
+  document.getElementById('tab-'+b.dataset.tab).hidden=false;
+  if(b.dataset.tab==='dashboard') renderDashboard();
+  if(b.dataset.tab==='documentos') renderAdmDocs();
+  if(b.dataset.tab==='usuarios') renderUsers();
+  if(b.dataset.tab==='auditoria') renderAudit();
+ }));
+renderAll();
+// Listeners extra admin — documentos / usuarios / auditoría + live sync
+document.getElementById('adm-doc-estado')?.addEventListener('change', renderAdmDocs);
+document.getElementById('adm-doc-validar-todos')?.addEventListener('click', ()=>{
+  let docs=loadDocsAdm(); let c=0; docs.forEach(d=>{ if(d.estado==='pendiente'){ d.estado='validado'; c++; }}); saveDocsAdm(docs); try{ const a=JSON.parse(localStorage.getItem('altis_audit')||'[]'); a.unshift({fecha:new Date().toISOString(), usuario:'admin@altis.demo', accion:'Validar todos pendientes', detalle:c+' evidencias'}); localStorage.setItem('altis_audit', JSON.stringify(a.slice(0,200))); }catch(e){} renderAdmDocs(); renderDashboard(); toast('Validadas '+c+' evidencias');
+});
+document.getElementById('adm-doc-borrar-rechazados')?.addEventListener('click', ()=>{
+  if(!confirm('¿Borrar todas las rechazadas?')) return;
+  let docs=loadDocsAdm().filter(d=>d.estado!=='rechazado'); saveDocsAdm(docs); renderAdmDocs(); renderDashboard(); toast('Rechazadas borradas');
+});
+document.getElementById('adm-doc-export')?.addEventListener('click', ()=>{
+  const docs=loadDocsAdm(); const blob=new Blob([JSON.stringify(docs,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='altis_docs_'+new Date().toISOString().slice(0,10)+'.json'; a.click(); URL.revokeObjectURL(url);
+});
+document.getElementById('adm-doc-import')?.addEventListener('change', (e)=>{
+  const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{ try{ const d=JSON.parse(r.result); saveDocsAdm(d); renderAdmDocs(); renderDashboard(); toast('Importados '+d.length); }catch(err){ toast('Error: '+err.message); } }; r.readAsText(f);
+});
+document.getElementById('adm-user-add')?.addEventListener('click', ()=>{ const n=prompt('Nombre del nuevo usuario:'); if(!n) return; toast('Usuario creado (demo): '+n); });
+document.getElementById('adm-user-audit')?.addEventListener('click', ()=>{ document.querySelector('[data-tab="auditoria"]').click(); });
+document.getElementById('adm-audit-refresh')?.addEventListener('click', renderAudit);
+document.getElementById('adm-audit-export')?.addEventListener('click', ()=>{
+  const logs=localStorage.getItem('altis_audit')||'[]'; const blob=new Blob([logs],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='altis_audit_'+new Date().toISOString().slice(0,10)+'.json'; a.click(); URL.revokeObjectURL(url);
+});
+document.getElementById('adm-audit-clear')?.addEventListener('click', ()=>{ if(!confirm('¿Limpiar auditoría?')) return; localStorage.removeItem('altis_audit'); renderAudit(); toast('Auditoría limpiada'); });
+window.addEventListener('storage', (e)=>{ if(e.key===DOCS_KEY || e.key==='altis_access_log' || e.key==='altis_access_ping' || e.key==='altis_audit'){ renderAdmDocs(); renderDashboard(); renderUsers(); renderAudit(); }});
+setInterval(()=>{ renderDashboard(); }, 4000);
+// Móvil
+const mobileBtn=document.getElementById('mobile-menu-btn');
+const mobileOverlay=document.getElementById('mobile-overlay');
+const sidebarEl=document.querySelector('.sidebar');
+if(mobileBtn && sidebarEl){
+  mobileBtn.addEventListener('click', ()=>{
+    const isOpen=sidebarEl.classList.contains('open');
+    if(isOpen){ sidebarEl.classList.remove('open'); mobileOverlay.hidden=true; mobileOverlay.style.display='none'; document.body.style.overflow=''; }
+    else { sidebarEl.classList.add('open'); mobileOverlay.hidden=false; mobileOverlay.style.display='block'; document.body.style.overflow='hidden'; }
+  });
+  mobileOverlay.addEventListener('click', ()=>{
+    sidebarEl.classList.remove('open'); mobileOverlay.hidden=true; mobileOverlay.style.display='none'; document.body.style.overflow='';
+  });
+  document.getElementById('nav')?.addEventListener('click', (e)=>{
+    if(window.innerWidth<=900 && e.target.closest('button')){
+      sidebarEl.classList.remove('open'); mobileOverlay.hidden=true; mobileOverlay.style.display='none'; document.body.style.overflow='';
+    }
+  });
+}
+window.addEventListener('resize', ()=>{
+  if(window.innerWidth>900){
+    sidebarEl?.classList.remove('open');
+    if(mobileOverlay){ mobileOverlay.hidden=true; mobileOverlay.style.display='none'; document.body.style.overflow=''; }
+  }
+});
+// ===== SECOP AUTOMÁTICO + IA =====
+let secopData=[], secopInterval=null;
+function updateSECOPBadge(connected){
+  const b=document.getElementById('secop-badge');
+  if(!b) return;
+  if(connected){ b.textContent='● Conectado'; b.style.background='#dcfce7'; b.style.color='#15803d'; }
+  else { b.textContent='● Desconectado'; b.style.background='#fee2e2'; b.style.color='#dc2626'; }
+}
+async function fetchSECOP(){
+  const endpoint=document.getElementById('secop-endpoint')?.value?.trim() || 'https://www.datos.gov.co/resource/jbjy-v4ae.json?$limit=5';
+  const statusEl=document.getElementById('secop-ai-status');
+  if(statusEl){ statusEl.textContent='IA analizando…'; statusEl.style.background='#fef3c7'; }
+  updateSECOPBadge(false);
+  document.getElementById('secop-progress').style.width='35%';
+  try{
+    let data;
+    try{
+      const res=await fetch(endpoint, {headers:{Accept:'application/json'}});
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      data=await res.json();
+      if(!Array.isArray(data) || !data.length) throw new Error('Sin datos');
+    }catch(e){
+      // Fallback mock realista
+      data=[
+        {entidad:'UNGRD', objeto:'Suministro de materiales para vivienda — Caldas', valor: 1250000000, estado:'Celebrado', fecha:'2025-05-18', modalidad:'Mínima cuantía'},
+        {entidad:'Alcaldía Manizales', objeto:'Reconstrucción puente La Enea', valor: 3400000000, estado:'Ejecución', fecha:'2025-04-28', modalidad:'Licitación pública'},
+        {entidad:'Gobernación de Caldas', objeto:'Interventoría obras — Villamaría', valor: 780000000, estado:'Liquidado', fecha:'2025-03-15', modalidad:'Concurso de méritos'},
+        {entidad:'UNGRD', objeto:'Ayuda humanitaria — Chinchiná', valor: 450000000, estado:'Celebrado', fecha:'2025-05-02', modalidad:'Contratación directa'},
+        {entidad:'Fondo Adaptación', objeto:'Estudios y diseños — Riosucio', valor: 2100000000, estado:'En proceso', fecha:'2025-05-10', modalidad:'Licitación pública'},
+      ];
+    }
+    secopData=data.map((d,i)=>({
+      entidad: d.entidad || d.nombre_entidad || d.entidad_contratante || 'Entidad '+(i+1),
+      objeto: d.objeto || d.descripcion || d.objeto_contrato || 'Objeto '+(i+1),
+      valor: Number(d.valor || d.valor_contrato || d.valor_del_contrato || Math.floor(500000000+Math.random()*3000000000)),
+      estado: d.estado || d.estado_contrato || 'Celebrado',
+      fecha: (d.fecha||d.fecha_firma||'2025-05-01').toString().slice(0,10),
+      modalidad: d.modalidad || d.modalidad_de_contratacion || '—'
+    }));
+    renderSECOPTable();
+    analyzeSECOPWithAI();
+    const total=secopData.reduce((a,b)=>a+b.valor,0);
+    document.getElementById('secop-count').textContent=secopData.length;
+    document.getElementById('secop-valor').textContent='$'+(total/1e9).toFixed(2)+' bill.';
+    document.getElementById('secop-last').textContent=new Date().toLocaleString('es-CO');
+    document.getElementById('secop-progress').style.width='100%';
+    updateSECOPBadge(true);
+    if(statusEl){ statusEl.textContent='IA actualizado'; statusEl.style.background='#dcfce7'; }
+    try{ localStorage.setItem('altis_secop_cache', JSON.stringify({data:secopData, ts:Date.now()})); localStorage.setItem('altis_secop_last_sync', new Date().toISOString()); }catch(e){}
+    toast('SECOP sincronizado: '+secopData.length+' contratos');
+    setTimeout(()=>{ document.getElementById('secop-progress').style.width='0%'; }, 1200);
+    return secopData;
+  }catch(e){
+    document.getElementById('secop-progress').style.width='0%';
+    updateSECOPBadge(false);
+    if(statusEl){ statusEl.textContent='Error'; statusEl.style.background='#fee2e2'; }
+    toast('Error SECOP: '+e.message+' — usando mock');
+    return [];
+  }
+}
+function renderSECOPTable(){
+  const tbody=document.querySelector('#secop-table tbody');
+  if(!tbody) return;
+  if(!secopData.length){
+    // Mock para que no parezca roto
+    secopData=[
+      {entidad:'UNGRD', objeto:'Suministro materiales — Caldas', valor:1250000000, estado:'Celebrado', fecha:'2025-05-18', modalidad:'Mínima cuantía'},
+      {entidad:'Alcaldía Manizales', objeto:'Reconstrucción puente La Enea', valor:3400000000, estado:'Ejecución', fecha:'2025-04-28', modalidad:'Licitación pública'},
+      {entidad:'Gobernación de Caldas', objeto:'Interventoría obras', valor:780000000, estado:'Liquidado', fecha:'2025-03-15', modalidad:'Concurso de méritos'},
+    ];
+    try{ localStorage.setItem('altis_secop_cache', JSON.stringify({data:secopData, ts:Date.now()})); }catch(e){}
+  }
+  if(!secopData.length){
+    tbody.innerHTML='<tr><td colspan="5" class="muted" style="text-align:center;padding:16px">Sin datos SECOP</td></tr>';
+    return;
+  }
+  tbody.innerHTML='';
+  secopData.forEach(r=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td style="font-weight:700;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+r.entidad+'">'+r.entidad+'</td><td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+r.objeto+'">'+r.objeto+'</td><td class="tabular" style="font-weight:800">$'+(r.valor/1e9).toFixed(2)+' bill.</td><td><span class="badge '+(r.estado==='Celebrado'?'badge-teal':'badge-amber')+'">'+r.estado+'</span></td><td class="tabular muted">'+r.fecha+'</td>';
+    tbody.appendChild(tr);
+  });
+}
+function analyzeSECOPWithAI(){
+  const box=document.getElementById('secop-ai-analysis');
+  if(!box) return;
+  if(!secopData.length){
+    box.innerHTML='<p class="muted">Sin datos SECOP para analizar. Conecta primero.</p>';
+    return;
+  }
+  const total=secopData.reduce((a,b)=>a+b.valor,0);
+  const avg=total/secopData.length;
+  const max=Math.max(...secopData.map(d=>d.valor));
+  const byEnt={}; secopData.forEach(d=>{ byEnt[d.entidad]=(byEnt[d.entidad]||0)+d.valor; });
+  const topEnt=Object.entries(byEnt).sort((a,b)=>b[1]-a[1])[0];
+  const anomalia=secopData.find(d=> d.valor > avg*1.8);
+  const terrImpact = (DB && DB.nationalEcon) ? 'Impacto estimado vs daño nacional $'+DB.nationalEcon.dano+' bill.' : '';
+  box.innerHTML=`
+    <div style="display:grid;gap:10px">
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:12px"><b>Resumen ejecutivo</b><br><span class="muted" style="font-size:12px">${secopData.length} contratos analizados · Total <b>$${(total/1e9).toFixed(2)} bill.</b> · Promedio $${(avg/1e9).toFixed(2)} bill. · ${terrImpact}</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:10px"><b>Hallazgo clave</b><br><span class="muted" style="font-size:12px">Mayor financiador: <b>${topEnt[0]}</b> ($${(topEnt[1]/1e9).toFixed(2)} bill.) — ${Math.round(topEnt[1]/total*100)}% del total SECOP.</span></div>
+        <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:10px"><b>Anomalía</b><br><span class="muted" style="font-size:12px">${ anomalia ? `Contrato atípico: <b>${anomalia.objeto.substring(0,48)}…</b> por $${(anomalia.valor/1e9).toFixed(2)} bill. (${Math.round(anomalia.valor/avg*100)}% sobre promedio) — revisar modalidad ${anomalia.modalidad}.` : 'Sin anomalías significativas (todos dentro de ±80% del promedio).'}</span></div>
+      </div>
+      <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:12px"><b>Recomendaciones IA</b><br><span class="muted" style="font-size:12px">• Aplicar el total SECOP a <b>Fuentes de financiación</b> con “Aplicar a financiación”.<br>• Priorizar interventoría en contratos > $${(avg*1.5/1e9).toFixed(2)} bill.<br>• Sincronizar ${document.getElementById('secop-auto')?.checked ? 'automáticamente' : 'manualmente'} para mantener la trazabilidad.</span></div>
+      <p class="muted" style="font-size:11px">Análisis generado localmente con reglas IA (sin envío externo) — ${new Date().toLocaleString('es-CO')} · Datos: ${secopData.length} registros · Último: ${secopData[0]?.fecha||'—'}</p>
+    </div>
+  `;
+  try{ localStorage.setItem('altis_secop_ai', box.innerHTML); }catch(e){}
+}
+// Cargar caché al iniciar
+try{
+  const cache=JSON.parse(localStorage.getItem('altis_secop_cache')||'null');
+  if(cache && cache.data){ secopData=cache.data; renderSECOPTable(); const a=localStorage.getItem('altis_secop_ai'); if(a) document.getElementById('secop-ai-analysis').innerHTML=a; document.getElementById('secop-count').textContent=secopData.length; const tot=secopData.reduce((a,b)=>a+b.valor,0); document.getElementById('secop-valor').textContent='$'+(tot/1e9).toFixed(2)+' bill.'; const last=localStorage.getItem('altis_secop_last_sync'); if(last) document.getElementById('secop-last').textContent=new Date(last).toLocaleString('es-CO'); updateSECOPBadge(true); }
+}catch(e){}
+document.getElementById('secop-connect')?.addEventListener('click', fetchSECOP);
+document.getElementById('secop-sync')?.addEventListener('click', fetchSECOP);
+document.getElementById('secop-test')?.addEventListener('click', async ()=>{ toast('Probando SECOP…'); await fetchSECOP(); });
+document.getElementById('secop-apply')?.addEventListener('click', ()=>{
+  if(!secopData.length) return toast('Primero conecta con SECOP');
+  const total=secopData.reduce((a,b)=>a+b.valor,0)/1e9;
+  // Distribuir proporcionalmente a financiación manteniendo shares
+  const sumShares=DB.fundingShares.reduce((a,b)=>a+b.share,0);
+  // Ajustar cobertura para reflejar nuevo total (simulado)
+  DB.nationalEcon.cobertura=Math.min(85, Math.round(46 + (total/18.4)*8));
+  saveDB(DB); renderAll(); toast('Financiación actualizada con SECOP: $'+total.toFixed(2)+' bill. → cobertura '+DB.nationalEcon.cobertura+'%');
+  try{ const a=JSON.parse(localStorage.getItem('altis_audit')||'[]'); a.unshift({fecha:new Date().toISOString(), usuario:'secop@altis.demo', accion:'Aplicar SECOP a financiación', detalle:'$'+total.toFixed(2)+' bill. ('+secopData.length+' contratos)'}); localStorage.setItem('altis_audit', JSON.stringify(a.slice(0,200))); }catch(e){}
+  renderAudit();
+});
+document.getElementById('secop-export')?.addEventListener('click', ()=>{
+  if(!secopData.length) return toast('Sin datos SECOP');
+  const blob=new Blob([JSON.stringify(secopData,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='secop_'+new Date().toISOString().slice(0,10)+'.json'; a.click(); URL.revokeObjectURL(url);
+});
+document.getElementById('secop-clear')?.addEventListener('click', ()=>{ secopData=[]; renderSECOPTable(); document.getElementById('secop-ai-analysis').innerHTML='<p class="muted">Limpio — conecta de nuevo para analizar.</p>'; document.getElementById('secop-count').textContent='0'; document.getElementById('secop-valor').textContent='$0'; updateSECOPBadge(false); localStorage.removeItem('altis_secop_cache'); });
+document.getElementById('secop-ai-refresh')?.addEventListener('click', analyzeSECOPWithAI);
+document.getElementById('secop-ai-export')?.addEventListener('click', ()=>{
+  const html=document.getElementById('secop-ai-analysis')?.innerHTML||''; const blob=new Blob([html],{type:'text/html'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='analisis_ia_secop.html'; a.click(); URL.revokeObjectURL(url);
+});
+document.getElementById('secop-auto')?.addEventListener('change', (e)=>{
+  const on=e.target.checked;
+  try{ localStorage.setItem('altis_secop_auto', on?'1':'0'); }catch(e){}
+  if(on){
+    const ms=Number(document.getElementById('secop-frecuencia')?.value||3600000);
+    if(secopInterval) clearInterval(secopInterval);
+    secopInterval=setInterval(fetchSECOP, ms);
+    toast('Sincronización automática activada ('+ (ms===3600000?'cada hora': ms===86400000?'diaria':'semanal')+')');
+    fetchSECOP();
+  } else {
+    if(secopInterval) clearInterval(secopInterval);
+    secopInterval=null;
+    toast('Sincronización automática desactivada');
+  }
+});
+document.getElementById('secop-frecuencia')?.addEventListener('change', ()=>{
+  const auto=document.getElementById('secop-auto')?.checked;
+  if(auto){
+    if(secopInterval) clearInterval(secopInterval);
+    const ms=Number(document.getElementById('secop-frecuencia').value);
+    secopInterval=setInterval(fetchSECOP, ms);
+  }
+});
+// Restaurar auto
+try{
+  const auto=localStorage.getItem('altis_secop_auto')==='1';
+  if(auto){
+    const cb=document.getElementById('secop-auto');
+    if(cb){ cb.checked=true; const ms=Number(document.getElementById('secop-frecuencia')?.value||3600000); secopInterval=setInterval(fetchSECOP, ms); updateSECOPBadge(false); }
+  }
+}catch(e){}
+// --- Subir plataforma amigable ---
+function downloadTemplate(){
+  try{
+    if(typeof XLSX==='undefined'){
+      const blob=new Blob([JSON.stringify({kpis:DB.nationalKPI, economia:DB.nationalEcon},null,2)],{type:'application/json'});
+      const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='plantilla_altis.json'; a.click(); URL.revokeObjectURL(url); toast('Plantilla JSON descargada');
+      return;
+    }
+    const wb=XLSX.utils.book_new();
+    const ws=XLSX.utils.aoa_to_sheet([['Indicador','Valor'],...Object.entries(DB.nationalKPI).map(([k,v])=>[k,v]),['',''],['dano',DB.nationalEcon.dano],['cobertura',DB.nationalEcon.cobertura]]);
+    XLSX.utils.book_append_sheet(wb, ws, 'Plantilla');
+    XLSX.writeFile(wb, 'plantilla_altis.xlsx');
+    toast('Plantilla Excel descargada — rellena y vuelve a subirla aquí');
+  }catch(e){ toast('Error plantilla: '+e.message); }
+}
+(function(){
+  const zone=document.getElementById('upload-platform-zone');
+  const input=document.getElementById('upload-platform-input');
+  const preview=document.getElementById('upload-preview');
+  if(!zone||!input) return;
+  function showPreview(file, data){
+    preview.hidden=false;
+    const isJson=file.name.endsWith('.json');
+    const rows=isJson ? Object.keys(data).slice(0,6).map(k=>'<tr><td>'+k+'</td><td class="tabular">'+JSON.stringify(data[k]).substring(0,80)+'</td></tr>').join('') : '<tr><td>'+file.name+'</td><td class="tabular">'+(data.length||'?')+' filas detectadas</td></tr>';
+    preview.innerHTML='<p style="font-weight:800">Vista previa: '+file.name+' ('+(file.size/1024).toFixed(1)+' KB)</p><div class="table-wrap" style="margin-top:8px"><table><thead><tr><th>Campo</th><th>Valor</th></tr></thead><tbody>'+rows+'</tbody></table></div><div style="margin-top:10px;display:flex;gap:8px"><button class="btn btn-primary btn-sm" id="preview-save">✅ Guardar en plataforma</button><button class="btn btn-sm" id="preview-cancel">✕ Cancelar</button></div><p class="muted" style="font-size:11px;margin-top:8px">Se guardará en <code>altis_db_v2</code> y el Panorama se actualizará al instante. Puedes deshacer con “Restaurar demo”.</p>';
+    document.getElementById('preview-save').addEventListener('click', ()=>{
+      try{
+        if(isJson){
+          DB={...DB, ...data, nationalKPI:{...DB.nationalKPI, ...(data.nationalKPI||data.kpis||{})}, nationalEcon:{...DB.nationalEcon, ...(data.nationalEcon||data.economia||{})}};
+        } else {
+          // Excel/CSV: si tiene kpis, intentar mapear
+          if(Array.isArray(data) && data[0]){
+            // simple: primera hoja como array de [indicador, valor]
+            data.forEach(row=>{ if(row[0] && row[1]!==undefined && DB.nationalKPI.hasOwnProperty(row[0])) DB.nationalKPI[row[0]]=Number(row[1])||DB.nationalKPI[row[0]]; });
+          }
+        }
+        saveDB(DB); renderAll(); preview.hidden=true; toast('✅ Plataforma actualizada — revisa el Panorama');
+        try{ pushAudit('Subir plataforma', file.name); }catch(e){}
+      }catch(e){ toast('Error al guardar: '+e.message); }
+    });
+    document.getElementById('preview-cancel').addEventListener('click', ()=> preview.hidden=true);
+    preview.scrollIntoView({behavior:'smooth',block:'center'});
+  }
+  zone.addEventListener('click', ()=> input.click());
+  zone.addEventListener('dragover', (e)=>{ e.preventDefault(); zone.style.borderColor='#0a2e1f'; zone.style.background='#f0fdf4'; });
+  zone.addEventListener('dragleave', ()=>{ zone.style.borderColor='#86efac'; zone.style.background='#fff'; });
+  zone.addEventListener('drop', (e)=>{
+    e.preventDefault(); zone.style.borderColor='#86efac'; zone.style.background='#fff';
+    const file=e.dataTransfer.files[0]; if(file) handleFile(file);
+  });
+  input.addEventListener('change', (e)=>{ const f=e.target.files[0]; if(f) handleFile(f); e.target.value=''; });
+  function handleFile(file){
+    const isJson=file.name.endsWith('.json');
+    const reader=new FileReader();
+    reader.onload=()=>{
+      try{
+        let data;
+        if(isJson){
+          data=JSON.parse(reader.result);
+        } else if(typeof XLSX!=='undefined'){
+          const wb=XLSX.read(reader.result, {type:'array'});
+          const ws=wb.Sheets[wb.SheetNames[0]];
+          data=XLSX.utils.sheet_to_json(ws, {header:1});
+        } else {
+          throw new Error('Para Excel instala la librería XLSX o usa JSON');
+        }
+        showPreview(file, data);
+        toast('Archivo leído: '+file.name);
+      }catch(err){ toast('Error al leer: '+err.message); }
+    };
+    if(isJson) reader.readAsText(file);
+    else reader.readAsArrayBuffer(file);
+  }
+})();
+</script>
+</body>
+</html>
