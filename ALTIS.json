@@ -1,0 +1,618 @@
+{
+  "meta": {
+    "nombre": "ALTIS — Observatorio Nacional de Reconstrucción",
+    "version": "2.0",
+    "generado": "2026-09-08T16:30:50.667Z",
+    "descripcion": "Dataset completo de ALTIS — Panorama, Reconstrucción, Territorios, Economía, Documentos y accesos. Compatible con ALTIS-Panorama.html y ALTIS-Admin.html (altis_db_v2, altis_docs_v2, altis_access_log).",
+    "autor": "Gobierno de Colombia — ALTIS",
+    "licencia": "Uso interno — demo"
+  },
+  "db": {
+    "nationalKPI": {
+      "familias": 42380,
+      "personas": 158742,
+      "damnificadas": 23516,
+      "unidadesTerritoriales": 247,
+      "viviendaPérdida": 2249,
+      "viviendaParcial": 9436,
+      "viviendaEval": 1382,
+      "hogaresReasentar": 684,
+      "educativas": 481,
+      "hospitales": 25,
+      "puentes": 74,
+      "acueductos": 112,
+      "patrimonio": 89,
+      "unidadesProductivas": 5620,
+      "hectareas": 12480,
+      "zonasRiesgo": 127
+    },
+    "nationalEcon": {
+      "dano": 18.4,
+      "cobertura": 46
+    },
+    "fundingShares": [
+      {
+        "k": "nacion",
+        "label": "Nación",
+        "share": 0.45,
+        "color": "var(--cat-1)"
+      },
+      {
+        "k": "departamentos",
+        "label": "Departamentos",
+        "share": 0.18,
+        "color": "var(--cat-2)"
+      },
+      {
+        "k": "municipios",
+        "label": "Municipios",
+        "share": 0.12,
+        "color": "var(--cat-3)"
+      },
+      {
+        "k": "cooperacion",
+        "label": "Cooperación Internacional",
+        "share": 0.2,
+        "color": "var(--cat-4)"
+      },
+      {
+        "k": "privado",
+        "label": "Sector Privado / Donaciones",
+        "share": 0.05,
+        "color": "var(--cat-5)"
+      }
+    ],
+    "reconstruccionDims": [
+      {
+        "label": "Vivienda y Hábitat",
+        "share": 0.34
+      },
+      {
+        "label": "Infraestructura Territorial",
+        "share": 0.26
+      },
+      {
+        "label": "Equipamientos Públicos",
+        "share": 0.11
+      },
+      {
+        "label": "Patrimonio Cultural",
+        "share": 0.09
+      },
+      {
+        "label": "Afectación Productiva",
+        "share": 0.16
+      },
+      {
+        "label": "Gestión del Riesgo",
+        "share": 0.04
+      }
+    ],
+    "fechas": [
+      "30 mar 2025",
+      "30 may 2025",
+      "31 jul 2025"
+    ],
+    "fechaMult": [
+      0.9,
+      1,
+      1.07
+    ],
+    "ambitoMult": {
+      "general": 1,
+      "urbano": 0.62,
+      "rural": 0.38
+    },
+    "departmentsRaw": [
+      [
+        "antioquia",
+        "Antioquia",
+        "andina",
+        6.244,
+        -75.581
+      ],
+      [
+        "boyaca",
+        "Boyacá",
+        "andina",
+        5.535,
+        -73.367
+      ],
+      [
+        "caldas",
+        "Caldas",
+        "andina",
+        5.068,
+        -75.518
+      ],
+      [
+        "cundinamarca",
+        "Cundinamarca",
+        "andina",
+        5.025,
+        -74.033
+      ],
+      [
+        "huila",
+        "Huila",
+        "andina",
+        2.927,
+        -75.281
+      ],
+      [
+        "norte-santander",
+        "Norte de Santander",
+        "andina",
+        7.894,
+        -72.507
+      ],
+      [
+        "quindio",
+        "Quindío",
+        "andina",
+        4.534,
+        -75.681
+      ],
+      [
+        "risaralda",
+        "Risaralda",
+        "andina",
+        4.813,
+        -75.696
+      ],
+      [
+        "santander",
+        "Santander",
+        "andina",
+        7.119,
+        -73.122
+      ],
+      [
+        "tolima",
+        "Tolima",
+        "andina",
+        4.438,
+        -75.232
+      ],
+      [
+        "bogota",
+        "Bogotá D.C.",
+        "andina",
+        4.711,
+        -74.072
+      ],
+      [
+        "atlantico",
+        "Atlántico",
+        "caribe-cont",
+        10.964,
+        -74.796
+      ],
+      [
+        "bolivar",
+        "Bolívar",
+        "caribe-cont",
+        10.391,
+        -75.479
+      ],
+      [
+        "cesar",
+        "Cesar",
+        "caribe-cont",
+        10.463,
+        -73.253
+      ],
+      [
+        "cordoba",
+        "Córdoba",
+        "caribe-cont",
+        8.748,
+        -75.878
+      ],
+      [
+        "la-guajira",
+        "La Guajira",
+        "caribe-cont",
+        11.544,
+        -72.907
+      ],
+      [
+        "magdalena",
+        "Magdalena",
+        "caribe-cont",
+        11.241,
+        -74.199
+      ],
+      [
+        "sucre",
+        "Sucre",
+        "caribe-cont",
+        9.303,
+        -75.397
+      ],
+      [
+        "san-andres",
+        "San Andrés y Providencia",
+        "caribe-ins",
+        12.584,
+        -81.7
+      ],
+      [
+        "cauca",
+        "Cauca",
+        "pacifico",
+        2.444,
+        -76.614
+      ],
+      [
+        "choco",
+        "Chocó",
+        "pacifico",
+        5.694,
+        -76.658
+      ],
+      [
+        "narino",
+        "Nariño",
+        "pacifico",
+        1.213,
+        -77.281
+      ],
+      [
+        "valle-cauca",
+        "Valle del Cauca",
+        "pacifico",
+        3.452,
+        -76.532
+      ],
+      [
+        "arauca",
+        "Arauca",
+        "orinoquia",
+        7.084,
+        -70.76
+      ],
+      [
+        "casanare",
+        "Casanare",
+        "orinoquia",
+        5.338,
+        -72.396
+      ],
+      [
+        "meta",
+        "Meta",
+        "orinoquia",
+        4.142,
+        -73.626
+      ],
+      [
+        "vichada",
+        "Vichada",
+        "orinoquia",
+        6.189,
+        -67.486
+      ],
+      [
+        "amazonas",
+        "Amazonas",
+        "amazonia",
+        -4.215,
+        -69.94
+      ],
+      [
+        "caqueta",
+        "Caquetá",
+        "amazonia",
+        1.614,
+        -75.606
+      ],
+      [
+        "guainia",
+        "Guainía",
+        "amazonia",
+        3.865,
+        -67.923
+      ],
+      [
+        "guaviare",
+        "Guaviare",
+        "amazonia",
+        2.567,
+        -72.639
+      ],
+      [
+        "putumayo",
+        "Putumayo",
+        "amazonia",
+        1.147,
+        -76.648
+      ],
+      [
+        "vaupes",
+        "Vaupés",
+        "amazonia",
+        1.251,
+        -70.235
+      ]
+    ],
+    "top5": {
+      "narino": 0.24,
+      "choco": 0.15,
+      "caldas": 0.11,
+      "antioquia": 0.09,
+      "valle-cauca": 0.07
+    },
+    "caldasMunicipios": [
+      {
+        "id": "manizales",
+        "name": "Manizales",
+        "share": 0.22,
+        "subregion": "Centro Sur",
+        "lat": 5.0675,
+        "lng": -75.51
+      },
+      {
+        "id": "chinchina",
+        "name": "Chinchiná",
+        "share": 0.17,
+        "subregion": "Centro Sur",
+        "lat": 4.9825,
+        "lng": -75.6036
+      },
+      {
+        "id": "villamaria",
+        "name": "Villamaría",
+        "share": 0.14,
+        "subregion": "Centro Sur",
+        "lat": 5.0978,
+        "lng": -75.5156
+      },
+      {
+        "id": "riosucio",
+        "name": "Riosucio",
+        "share": 0.11,
+        "subregion": "Occidente",
+        "lat": 5.4247,
+        "lng": -75.7008
+      },
+      {
+        "id": "anserma",
+        "name": "Anserma",
+        "share": 0.09,
+        "subregion": "Alto Occidente",
+        "lat": 5.2333,
+        "lng": -75.7833
+      }
+    ],
+    "manizalesZonas": [
+      {
+        "id": "zona-norte",
+        "name": "Zona Norte",
+        "share": 0.26,
+        "tipo": "Barrios"
+      },
+      {
+        "id": "zona-centro",
+        "name": "Zona Centro",
+        "share": 0.21,
+        "tipo": "Cabecera Municipal"
+      },
+      {
+        "id": "corregimiento-1",
+        "name": "Corregimiento 1",
+        "share": 0.17,
+        "tipo": "Corregimientos"
+      },
+      {
+        "id": "corregimiento-2",
+        "name": "Corregimiento 2",
+        "share": 0.14,
+        "tipo": "Corregimientos"
+      },
+      {
+        "id": "zona-oriente",
+        "name": "Zona Oriente",
+        "share": 0.1,
+        "tipo": "Centros Poblados"
+      }
+    ],
+    "caldasSubregions": [
+      "Norte",
+      "Centro Sur",
+      "Oriente",
+      "Occidente",
+      "Alto Occidente",
+      "Magdalena Caldense"
+    ],
+    "zonaTipos": [
+      "Cabecera Municipal",
+      "Barrios",
+      "Corregimientos",
+      "Centros Poblados",
+      "Veredas"
+    ]
+  },
+  "docs": [
+    {
+      "id": 1,
+      "tipo": "foto",
+      "titulo": "Afectación puente La Libertad",
+      "descripcion": "Colapso parcial por socavación — evidencia fotográfica validada por interventoría",
+      "terr": "Caldas",
+      "municipio": "Manizales",
+      "fecha": "2025-05-12",
+      "autor": "Ing. Valentina Ruiz",
+      "estado": "validado",
+      "tags": [
+        "puente",
+        "vía",
+        "socavación"
+      ],
+      "coords": {
+        "lat": 5.07,
+        "lng": -75.51
+      },
+      "archivo": null
+    },
+    {
+      "id": 2,
+      "tipo": "informe",
+      "titulo": "Informe técnico Manizales — Zona Norte",
+      "descripcion": "Evaluación estructural de 42 viviendas — incluye fichas y georreferenciación",
+      "terr": "Manizales",
+      "municipio": "Manizales",
+      "fecha": "2025-04-28",
+      "autor": "UNGRD",
+      "estado": "validado",
+      "tags": [
+        "vivienda",
+        "estructural"
+      ],
+      "coords": {
+        "lat": 5.09,
+        "lng": -75.5
+      },
+      "archivo": null
+    },
+    {
+      "id": 3,
+      "tipo": "acta",
+      "titulo": "Acta de concertación Chinchiná",
+      "descripcion": "Acuerdo comunitario para reasentamiento — 120 hogares",
+      "terr": "Chinchiná",
+      "municipio": "Chinchiná",
+      "fecha": "2025-03-30",
+      "autor": "Alcaldía Chinchiná",
+      "estado": "pendiente",
+      "tags": [
+        "acta",
+        "reasentamiento"
+      ],
+      "coords": {
+        "lat": 4.98,
+        "lng": -75.6
+      },
+      "archivo": null
+    },
+    {
+      "id": 4,
+      "tipo": "video",
+      "titulo": "Sobrevuelo dron — Riosucio",
+      "descripcion": "Video 4K — deslizamiento ladera sur — 3 min",
+      "terr": "Riosucio",
+      "municipio": "Riosucio",
+      "fecha": "2025-05-20",
+      "autor": "Equipo dron ALTIS",
+      "estado": "validado",
+      "tags": [
+        "dron",
+        "deslizamiento"
+      ],
+      "coords": {
+        "lat": 5.42,
+        "lng": -75.7
+      },
+      "archivo": null
+    },
+    {
+      "id": 5,
+      "tipo": "foto",
+      "titulo": "Vivienda colapsada — Villamaría",
+      "descripcion": "Pérdida total — ficha EDAN",
+      "terr": "Villamaría",
+      "municipio": "Villamaría",
+      "fecha": "2025-05-02",
+      "autor": "Defensa Civil",
+      "estado": "pendiente",
+      "tags": [
+        "vivienda",
+        "EDAN"
+      ],
+      "coords": {
+        "lat": 5.1,
+        "lng": -75.51
+      },
+      "archivo": null
+    },
+    {
+      "id": 6,
+      "tipo": "informe",
+      "titulo": "Evaluación estructural — Anserma",
+      "descripcion": "Patología en 18 equipamientos públicos",
+      "terr": "Anserma",
+      "municipio": "Anserma",
+      "fecha": "2025-04-15",
+      "autor": "SENA",
+      "estado": "rechazado",
+      "tags": [
+        "equipamiento"
+      ],
+      "coords": {
+        "lat": 5.23,
+        "lng": -75.78
+      },
+      "archivo": null
+    },
+    {
+      "id": 7,
+      "tipo": "mapa",
+      "titulo": "Mapa de calor — afectación Nariño",
+      "descripcion": "Raster de severidad generado desde el Panorama",
+      "terr": "Nariño",
+      "municipio": "Pasto",
+      "fecha": "2025-05-18",
+      "autor": "ALTIS GIS",
+      "estado": "validado",
+      "tags": [
+        "mapa",
+        "severidad"
+      ],
+      "coords": {
+        "lat": 1.21,
+        "lng": -77.28
+      },
+      "archivo": null
+    }
+  ],
+  "secop": {
+    "endpoint": "https://www.datos.gov.co/resource/jbjy-v4ae.json?$limit=5",
+    "nota": "Conecta desde Panel de Datos → SECOP. Mock incluido si no hay conexión."
+  },
+  "usuarios_demo": [
+    {
+      "email": "usuarionacional@altis.demo",
+      "pass": "12345",
+      "nombre": "Ana María Rodríguez",
+      "rol": "nacional"
+    },
+    {
+      "email": "usuariodepto@altis.demo",
+      "pass": "12345",
+      "nombre": "Carlos Alberto Vélez",
+      "rol": "departamental"
+    },
+    {
+      "email": "usuariomun@altis.demo",
+      "pass": "12345",
+      "nombre": "Laura Sofía Gómez",
+      "rol": "municipal"
+    },
+    {
+      "email": "ADMIN",
+      "pass": "1234H",
+      "nombre": "Administrador",
+      "rol": "admin",
+      "nota": "Único con acceso a Panel de Datos"
+    }
+  ],
+  "localStorage_keys": {
+    "db": "altis_db_v2",
+    "docs": "altis_docs_v2",
+    "access_log": "altis_access_log",
+    "audit": "altis_audit",
+    "theme": "altis_theme",
+    "admin_session": "altis_admin_session (30 min)",
+    "secop_cache": "altis_secop_cache"
+  }
+}
